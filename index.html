@@ -154,7 +154,7 @@ const ROOMS=[
 {id:'stat',name:'統計房',topic:'統計',tileX:4,tileY:5,w:4,h:2,color:'#FAAD14'},
 ];
 class MainScene extends Phaser.Scene{
-  constructor(){super({key:'Main'});this.player=null;this.cursors=null;this.joystick={x:0,y:0};this.lastTile=null;}
+  constructor(){super({key:'Main'});this.player=null;this.cursors=null;this.joystick={x:0,y:0};this.lastTile=null;this.lastRoom=null;}
 
   preload(){this.createPixelTextures();}
 
@@ -163,7 +163,6 @@ class MainScene extends Phaser.Scene{
     this.drawMap();
     this.player=this.physics.add.sprite(5*TILE+24,7*TILE+24,'player');
     this.player.setCollideWorldBounds(true);
-    this.physics.add.collider(this.player,this.walls);
     this.cursors=this.input.keyboard.createCursorKeys();
     this.wasd=this.input.keyboard.addKeys('W,A,S,D');
     this.setupJoystick();
@@ -175,44 +174,39 @@ class MainScene extends Phaser.Scene{
   }
 
   createPixelTextures(){
-    const mk=(key,w,h,draw)=>{const g=this.make.graphics({add:false});draw(g);g.generateImage(key,Phaser.DisplayFormats.RGB565);g.destroy();};
-    mk('floor',TILE,TILE,g=>{g.fillStyle(139,93,139);g.fillRect(0,0,TILE,TILE);g.fillStyle(149,103,149);g.fillRect(0,0,TILE/2,TILE/2);g.fillRect(TILE/2,TILE/2,TILE/2,TILE/2);});
-    mk('wall',TILE,TILE,g=>{g.fillStyle(74,74,106);g.fillRect(0,0,TILE,TILE);g.fillStyle(84,84,116);g.fillRect(2,2,TILE-4,TILE-4);g.fillStyle(64,64,96);g.fillRect(4,4,TILE-8,TILE-8);});
-    mk('entrance',TILE,TILE,g=>{g.fillStyle(61,90,61);g.fillRect(0,0,TILE,TILE);g.fillStyle(71,100,71);g.fillRect(0,0,TILE/2,TILE);});
-    mk('classroom',TILE,TILE,g=>{g.fillStyle(74,144,217);g.fillRect(0,0,TILE,TILE);g.fillStyle(84,154,227);g.fillRect(4,4,TILE-8,TILE-8);});
-    mk('door',TILE,TILE,g=>{g.fillStyle(139,105,20);g.fillRect(0,0,TILE,TILE);g.fillStyle(159,125,40);g.fillRect(4,4,TILE-8,TILE-8);});
+    const mk=(key,w,h,draw)=>{const g=this.make.graphics({add:false});draw(g);g.generateTexture(key,w,h);g.destroy();};
+    mk('floor',TILE,TILE,g=>{g.fillStyle(0x8b5d8b);g.fillRect(0,0,TILE,TILE);g.fillStyle(0x956799);g.fillRect(0,0,TILE/2,TILE/2);g.fillRect(TILE/2,TILE/2,TILE/2,TILE/2);});
+    mk('wall',TILE,TILE,g=>{g.fillStyle(0x4a4a6a);g.fillRect(0,0,TILE,TILE);g.fillStyle(0x545474);g.fillRect(2,2,TILE-4,TILE-4);g.fillStyle(0x404060);g.fillRect(4,4,TILE-8,TILE-8);});
+    mk('entrance',TILE,TILE,g=>{g.fillStyle(0x3d5a3d);g.fillRect(0,0,TILE,TILE);g.fillStyle(0x476447);g.fillRect(0,0,TILE/2,TILE);});
+    mk('classroom',TILE,TILE,g=>{g.fillStyle(0x4a90d9);g.fillRect(0,0,TILE,TILE);g.fillStyle(0x549ae3);g.fillRect(4,4,TILE-8,TILE-8);});
+    mk('door',TILE,TILE,g=>{g.fillStyle(0x8b6914);g.fillRect(0,0,TILE,TILE);g.fillStyle(0x9f7d28);g.fillRect(4,4,TILE-8,TILE-8);});
     mk('player',24,32,g=>{
-      g.fillStyle(255,200,153);g.fillRect(8,0,8,8);
-      g.fillStyle(74,144,217);g.fillRect(6,8,12,12);
-      g.fillStyle(0,0,0);g.fillRect(10,2,2,2);g.fillRect(14,2,2,2);
-      g.fillStyle(50,50,80);g.fillRect(6,20,4,12);g.fillRect(14,20,4,12);
-      g.fillStyle(30,30,60);g.fillRect(6,28,4,4);g.fillRect(14,28,4,4);
+      g.fillStyle(0xffc899);g.fillRect(8,0,8,8);
+      g.fillStyle(0x4a90d9);g.fillRect(6,8,12,12);
+      g.fillStyle(0x000000);g.fillRect(10,2,2,2);g.fillRect(14,2,2,2);
+      g.fillStyle(0x323250);g.fillRect(6,20,4,12);g.fillRect(14,20,4,12);
+      g.fillStyle(0x1e1e3c);g.fillRect(6,28,4,4);g.fillRect(14,28,4,4);
     });
-    mk('heart',16,16,g=>{g.fillStyle(245,34,45);g.fillCircle(8,8,7);g.fillStyle(255,100,100);g.fillCircle(6,6,3);});
+    mk('heart',16,16,g=>{g.fillStyle(0xf5222d);g.fillCircle(8,8,7);g.fillStyle(0xff6464);g.fillCircle(6,6,3);});
   }
 
   drawMap(){
     const floor=this.add.group();
-    const walls=this.physics.add.staticGroup();
     for(let y=0;y<MAP_ROWS;y++)for(let x=0;x<MAP_COLS;x++){
       const t=this.getTile(x,y);
-      const key=t==='wall'?'wall':(t==='entrance'?'entrance':'floor');
-      floor.create(x*TILE+24,y*TILE+24,key).setInteractive(false);
+      if(t==='wall'){const w=this.add.sprite(x*TILE+24,y*TILE+24,'wall');floor.add(w);}
+      else{const f=this.add.sprite(x*TILE+24,y*TILE+24,t==='entrance'?'entrance':'floor');floor.add(f);}
     }
     ROOMS.forEach(r=>{
       for(let dy=0;dy<r.h;dy++)for(let dx=0;dx<r.w;dx++){
         const x=r.tileX+dx,y=r.tileY+dy;
         const cl=this.add.sprite(x*TILE+24,y*TILE+24,'classroom');
-        cl.setTint(r.color.replace('#','0x'));
+        cl.setTint(parseInt(r.color.replace('#',''),16));
         floor.add(cl);
       }
-      for(let i=0;i<r.w;i++){
-        const dx=i==0?-1:i==r.w-1?1:0;
-        if(dx!==0){const d=this.add.sprite((r.tileX+(dx<0?0:r.w-1))*TILE+24,(r.tileY)*TILE+24,'door');floor.add(d);}
-        const sign=this.add.text((r.tileX+i)*TILE+24,(r.tileY-0.3)*TILE+24,r.name,{fontSize:'10px',color:'#fff',backgroundColor:'rgba(0,0,0,0.5)',padding:2});sign.setOrigin(.5);
-      }
+      const sign=this.add.text((r.tileX+r.w/2)*TILE,(r.tileY-0.5)*TILE,r.name,{fontSize:'11px',color:'#fff',backgroundColor:'rgba(0,0,0,0.6)',padding:{x:4,y:2}});
+      sign.setOrigin(.5);
     });
-    this.walls=floor;
   }
 
   getTile(x,y){
@@ -256,13 +250,16 @@ class MainScene extends Phaser.Scene{
       const tileKey=tileX+'_'+tileY;
       if(this.lastTile!==tileKey){this.lastTile=tileKey;sfxStep();}
     }
-    for(const r of ROOMS){
-      const px=Math.floor(this.player.x/TILE),py=Math.floor(this.player.y/TILE);
-      if(px>=r.tileX&&px<r.tileX+r.w&&py>=r.tileY&&py<r.tileY+r.h&&this.player.body.velocity.x!==0||this.player.body.velocity.y!==0){
-        this.player.setVelocity(0,0);
-        this.player.x=Math.max(r.tileX*TILE+24,Math.min((r.tileX+r.w)*TILE-24,this.player.x));
-        this.player.y=Math.max(r.tileY*TILE+24,Math.min((r.tileY+r.h)*TILE-24,this.player.y));
+    // Auto-trigger quiz when entering a room
+    const px=Math.floor(this.player.x/TILE),py=Math.floor(this.player.y/TILE);
+    if(!document.getElementById('quiz-overlay').style.display||document.getElementById('quiz-overlay').style.display==='none'){
+      for(const r of ROOMS){
+        if(px>=r.tileX&&px<r.tileX+r.w&&py>=r.tileY&&py<r.tileY+r.h){
+          if(this.lastRoom!==r.id){this.lastRoom=r.id;startQuiz(r.topic,r.name);}
+          return;
+        }
       }
+      this.lastRoom=null;
     }
   }
 }
