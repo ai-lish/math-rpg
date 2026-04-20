@@ -7,86 +7,236 @@
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-action:none}
 #game-container{width:100vw;height:100vh;display:block}
-#hud{position:fixed;top:0;left:0;right:0;padding:10px 15px;display:flex;gap:12px;z-index:100;pointer-events:none}
+
+/* ===== HUD ===== */
+#hud{position:fixed;top:0;left:0;right:56px;padding:10px 15px;display:flex;gap:12px;z-index:100;pointer-events:none;flex-wrap:wrap}
 .hud-item{display:flex;align-items:center;gap:6px;color:#fff;font-size:14px;font-weight:600}
 .hud-bar{width:80px;height:10px;background:#2d2d4a;border-radius:5px;overflow:hidden}
 .hud-fill{height:100%;border-radius:5px;transition:width .3s}
-#hp-bar{background:#F5222D}
-#xp-bar{background:#FAAD14}
-#quiz-overlay{display:none;position:fixed;inset:0;background:rgba(26,26,46,.95);z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+#hp-bar{background:linear-gradient(90deg,#F5222D,#FF6B6B)}
+#xp-bar{background:linear-gradient(90deg,#FAAD14,#FFD700)}
+#hp-text,#xp-text{font-size:12px;color:#ccc}
+#streak-display{display:none;align-items:center;gap:4px;color:#FF6B35;font-size:13px;font-weight:700}
+#streak-display.active{display:flex}
+
+/* ===== TOP-RIGHT AUTH ===== */
+#auth-area{position:fixed;top:8px;right:8px;z-index:120;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+#user-info{display:none;flex-direction:column;align-items:flex-end;gap:2px}
+#user-name{color:#fff;font-size:12px;font-weight:600}
+#user-level{color:#FAAD14;font-size:11px}
+#login-btn{background:#4A90D9;border:none;color:#fff;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600}
+#login-btn:hover{background:#357ABD}
+#logout-btn{display:none;background:transparent;border:1px solid #F5222D;color:#F5222D;padding:5px 12px;border-radius:8px;cursor:pointer;font-size:12px}
+#logout-btn:hover{background:#F5222D;color:#fff}
+#leaderboard-btn{background:#FAAD14;border:none;color:#1A1A2E;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700}
+
+/* ===== MENU BUTTON ===== */
+#menu-btn{position:fixed;top:10px;right:160px;z-index:110;background:#4A90D9;border:none;color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px}
+
+/* ===== QUIZ OVERLAY ===== */
+#quiz-overlay{display:none;position:fixed;inset:0;background:rgba(26,26,46,.97);z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:20px}
 #quiz-card{background:#16213e;border-radius:16px;padding:24px;max-width:500px;width:100%;border:2px solid #4A90D9;box-shadow:0 0 30px rgba(74,144,217,.3)}
-#quiz-topic{color:#4A90D9;font-size:13px;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px}
-#quiz-question{margin-bottom:20px;font-size:18px;color:#fff;line-height:1.6;min-height:60px}
+#quiz-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+#quiz-topic{color:#4A90D9;font-size:13px;text-transform:uppercase;letter-spacing:1px}
+#quiz-meta{color:#888;font-size:12px;display:flex;gap:8px}
+#quiz-streak{color:#FF6B35;font-weight:700}
+#quiz-question{margin-bottom:16px;font-size:17px;color:#fff;line-height:1.6;min-height:50px}
 #quiz-question .katex{font-size:1.2em}
-.quiz-options{display:flex;flex-direction:column;gap:10px}
+.quiz-options{display:flex;flex-direction:column;gap:8px}
 .quiz-option{background:#1f2d4a;border:2px solid #2d4a6a;border-radius:10px;padding:12px 16px;color:#fff;font-size:15px;cursor:pointer;transition:all .2s;text-align:left}
 .quiz-option:hover,.quiz-option:active{border-color:#4A90D9;background:#2d4a6a}
 .quiz-option.correct{border-color:#52C41A;background:rgba(82,196,26,.2)}
 .quiz-option.wrong{border-color:#F5222D;background:rgba(245,34,45,.2)}
-.quiz-option.disabled{pointer-events:none;opacity:.6}
-#quiz-feedback{margin-top:16px;text-align:center;font-size:16px;font-weight:700;min-height:24px}
+.quiz-option.disabled{pointer-events:none;opacity:.7}
+#quiz-feedback{margin-top:14px;text-align:center;font-size:15px;font-weight:700;min-height:22px}
 #quiz-feedback.correct{color:#52C41A}
 #quiz-feedback.wrong{color:#F5222D}
-#quiz-exit{margin-top:16px;background:transparent;border:2px solid #4A90D9;color:#4A90D9;padding:8px 24px;border-radius:8px;cursor:pointer;font-size:14px}
+#quiz-exit{margin-top:14px;background:transparent;border:2px solid #4A90D9;color:#4A90D9;padding:8px 24px;border-radius:8px;cursor:pointer;font-size:14px}
 #quiz-exit:hover{background:#4A90D9;color:#fff}
-#joystick-zone{display:none;position:fixed;bottom:30px;left:30px;width:120px;height:120px;z-index:150;pointer-events:all}
-#joystick-base{width:100%;height:100%;background:rgba(255,255,255,.1);border-radius:50%;border:3px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center}
-#joystick-knob{width:50px;height:50px;background:#4A90D9;border-radius:50%;opacity:.8;transition:transform .1s}
-#level-up{display:none;position:fixed;inset:0;z-index:300;background:rgba(26,26,46,.9);flex-direction:column;align-items:center;justify-content:center}
+#quiz-nav{margin-top:8px;display:flex;justify-content:center;gap:8px}
+.quiz-nav-btn{background:#2d4a6a;border:none;color:#fff;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px}
+.quiz-nav-btn:hover{background:#3d5a7a}
+
+/* ===== LEVEL UP ===== */
+#level-up{display:none;position:fixed;inset:0;z-index:300;background:rgba(26,26,46,.92);flex-direction:column;align-items:center;justify-content:center}
 .level-up-text{font-size:48px;color:#FAAD14;font-weight:900;text-align:center;animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 .level-up-sub{font-size:20px;color:#fff;margin-top:10px}
-#menu-btn{position:fixed;top:10px;right:10px;z-index:110;background:#4A90D9;border:none;color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px}
+
+/* ===== JOYSTICK ===== */
+#joystick-zone{display:none;position:fixed;bottom:30px;left:30px;width:120px;height:120px;z-index:150;pointer-events:all}
+#joystick-base{width:100%;height:100%;background:rgba(255,255,255,.1);border-radius:50%;border:3px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center}
+#joystick-knob{width:50px;height:50px;background:#4A90D9;border-radius:50%;opacity:.8;transition:transform .1s}
+
+/* ===== MENU OVERLAY ===== */
+#menu{display:none;position:fixed;inset:0;z-index:400;background:rgba(26,26,46,.96);flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.menu-title{color:#fff;font-size:22px;font-weight:700;margin-bottom:6px}
+.menu-subtitle{color:#888;font-size:13px;margin-bottom:8px}
+.menu-btn{background:#4A90D9;border:none;color:#fff;padding:12px 36px;border-radius:8px;cursor:pointer;font-size:15px;font-weight:600;min-width:200px}
+.menu-btn:hover{background:#357ABD}
+.menu-btn.danger{background:#F5222D}
+.menu-btn.danger:hover{background:#D91B1B}
+.menu-btn.gold{background:#FAAD14;color:#1A1A2E}
+.menu-btn.gold:hover{background:#E59B00}
+
+/* ===== LEADERBOARD PANEL ===== */
+#leaderboard-panel{display:none;position:fixed;inset:0;z-index:500;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:center;padding:20px}
+#leaderboard-card{background:#16213e;border-radius:16px;padding:24px;max-width:420px;width:100%;border:2px solid #FAAD14;max-height:80vh;overflow-y:auto}
+.lb-title{color:#FAAD14;font-size:20px;font-weight:800;text-align:center;margin-bottom:16px}
+.lb-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;margin-bottom:6px}
+.lb-row:nth-child(even){background:rgba(255,255,255,.03)}
+.lb-rank{font-size:16px;font-weight:800;min-width:30px;text-align:center}
+.lb-rank.gold{color:#FFD700}
+.lb-rank.silver{color:#C0C0C0}
+.lb-rank.bronze{color:#CD7F32}
+.lb-name{flex:1;color:#fff;font-size:14px}
+.lb-level{color:#4A90D9;font-size:13px;font-weight:600}
+.lb-xp{color:#FAAD14;font-size:12px}
+.lb-close{margin-top:16px;background:#FAAD14;border:none;color:#1A1A2E;padding:10px 32px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700}
+
+/* ===== DAILY TASKS PANEL ===== */
+#daily-tasks-panel{display:none;position:fixed;inset:0;z-index:500;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:center;padding:20px}
+#tasks-card{background:#16213e;border-radius:16px;padding:24px;max-width:400px;width:100%;border:2px solid #52C41A}
+.tasks-title{color:#52C41A;font-size:20px;font-weight:800;text-align:center;margin-bottom:16px}
+.task-row{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,.03);border-radius:8px;margin-bottom:8px}
+.task-icon{font-size:24px}
+.task-info{flex:1}
+.task-name{color:#fff;font-size:14px;font-weight:600}
+.task-desc{color:#888;font-size:12px}
+.task-progress{color:#FAAD14;font-size:13px;font-weight:700;min-width:50px;text-align:right}
+.task-reward{color:#52C41A;font-size:12px}
+.task-complete{text-decoration:line-through;opacity:.5}
+.tasks-close{margin-top:16px;background:#52C41A;border:none;color:#fff;padding:10px 32px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700}
+
+/* ===== FIREBASE STATUS ===== */
+#firebase-status{position:fixed;bottom:10px;right:10px;z-index:90;font-size:11px;padding:4px 8px;border-radius:4px;display:none}
+#firebase-status.offline{background:#F5222D;color:#fff}
+#firebase-status.online{background:#52C41A;color:#fff}
 </style>
 </head>
 <body>
 <div id="game-container"></div>
+
+<!-- HUD -->
 <div id="hud">
-<div class="hud-item"><span style="color:#F5222D">❤</span><div class="hud-bar"><div class="hud-fill" id="hp-bar" style="width:100%"></div></div><span id="hp-text">100</span></div>
-<div class="hud-item"><span style="color:#FAAD14">⭐</span><div class="hud-bar"><div class="hud-fill" id="xp-bar" style="width:0%"></div></div><span id="level-text">Lv.1</span></div>
+  <div class="hud-item"><span style="color:#F5222D">❤</span><div class="hud-bar"><div class="hud-fill" id="hp-bar" style="width:100%"></div></div><span id="hp-text">100</span></div>
+  <div class="hud-item"><span style="color:#FAAD14">⭐</span><div class="hud-bar"><div class="hud-fill" id="xp-bar" style="width:0%"></div></div><span id="xp-text">0</span><span id="level-text" style="color:#FAAD14">Lv.1</span></div>
+  <div id="streak-display" class="hud-item">🔥<span id="streak-num">0</span></div>
 </div>
-<button id="menu-btn" onclick="showMenu()">選單</button>
+
+<!-- Auth Area -->
+<div id="auth-area">
+  <div id="user-info">
+    <div id="user-name">Player</div>
+    <div id="user-level">Lv.1</div>
+  </div>
+  <button id="leaderboard-btn" onclick="showLeaderboard()">🏆 排行榜</button>
+  <button id="login-btn" onclick="signIn()">🔐 登入</button>
+  <button id="logout-btn" onclick="signOut()">登出</button>
+</div>
+
+<button id="menu-btn" onclick="showMenu()">選單 ☰</button>
+
+<!-- Quiz Overlay -->
 <div id="quiz-overlay">
-<div id="quiz-card">
-<div id="quiz-topic">代數房</div>
-<div id="quiz-question"></div>
-<div class="quiz-options" id="quiz-options"></div>
-<div id="quiz-feedback"></div>
-<button id="quiz-exit" onclick="exitQuiz()">離開</button>
+  <div id="quiz-card">
+    <div id="quiz-header">
+      <div id="quiz-topic">代數房</div>
+      <div id="quiz-meta">
+        <span id="quiz-streak">🔥0連勝</span>
+        <span id="quiz-qnum">Q1</span>
+      </div>
+    </div>
+    <div id="quiz-question"></div>
+    <div class="quiz-options" id="quiz-options"></div>
+    <div id="quiz-feedback"></div>
+    <div id="quiz-nav">
+      <button class="quiz-nav-btn" onclick="showDailyTasks()">📋 每日任務</button>
+      <button class="quiz-nav-btn" onclick="exitQuiz()">離開</button>
+    </div>
+  </div>
 </div>
-</div>
+
+<!-- Level Up -->
 <div id="level-up"><div class="level-up-text">⬆️ 升級！</div><div class="level-up-sub" id="level-up-info">等級 2</div></div>
+
+<!-- Joystick -->
 <div id="joystick-zone"><div id="joystick-base"><div id="joystick-knob"></div></div></div>
-<div id="menu" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(26,26,46,.95);flex-direction:column;align-items:center;justify-content:center;gap:16px">
-<div style="color:#fff;font-size:24px;font-weight:700;margin-bottom:10px">📋 選單</div>
-<button onclick="resetGame()" style="background:#F5222D;border:none;color:#fff;padding:12px 32px;border-radius:8px;cursor:pointer;font-size:15px">重新開始</button>
-<button onclick="closeMenu()" style="background:#4A90D9;border:none;color:#fff;padding:12px 32px;border-radius:8px;cursor:pointer;font-size:15px">繼續遊戲</button>
+
+<!-- Menu -->
+<div id="menu">
+  <div class="menu-title">📋 選單</div>
+  <div class="menu-subtitle" id="menu-player-info"></div>
+  <button class="menu-btn gold" onclick="showDailyTasks();closeMenu();">📋 每日任務</button>
+  <button class="menu-btn" onclick="showLeaderboard();closeMenu();">🏆 排行榜</button>
+  <button class="menu-btn danger" onclick="resetGame()">重新開始</button>
+  <button class="menu-btn" onclick="closeMenu()">繼續遊戲</button>
 </div>
+
+<!-- Leaderboard Panel -->
+<div id="leaderboard-panel">
+  <div id="leaderboard-card">
+    <div class="lb-title">🏆 排行榜</div>
+    <div id="leaderboard-list"></div>
+    <button class="lb-close" onclick="closeLeaderboard()">關閉</button>
+  </div>
+</div>
+
+<!-- Daily Tasks Panel -->
+<div id="daily-tasks-panel">
+  <div id="tasks-card">
+    <div class="tasks-title">📋 每日任務</div>
+    <div id="tasks-list"></div>
+    <button class="tasks-close" onclick="closeDailyTasks()">關閉</button>
+  </div>
+</div>
+
+<!-- Firebase Status -->
+<div id="firebase-status">離線</div>
+
 <script>
-// ============ SOUND ============
-const AudioCtx=window.AudioContext||window.webkitAudioContext;
-let audioCtx=null;
-function initAudio(){if(!audioCtx)audioCtx=new AudioCtx()}
-function playTone(freq,dur,type='square',vol=.15){
-  initAudio();
-  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
-  o.type=type;o.frequency.value=freq;
-  g.gain.setValueAtTime(vol,audioCtx.currentTime);
-  g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);
-  o.connect(g);g.connect(audioCtx.destination);
-  o.start();o.stop(audioCtx.currentTime+dur);
+// ============================================================
+// FIREBASE CONFIGURATION
+// ============================================================
+// Fill in your Firebase config in firebase-config.js
+// Get config from: https://console.firebase.google.com/ → Project Settings → Your apps
+let firebaseConfigured = false;
+let db = null;
+let auth = null;
+let currentUser = null;
+let gasUrl = null; // Your GAS Web App URL e.g. 'https://script.google.com/macros/s/.../exec'
+
+try {
+  // Try to load config
+  if (typeof FirebaseConfig !== 'undefined') {
+    firebase.initializeApp(FirebaseConfig);
+    auth = firebase.auth();
+    db = firebase.database();
+    firebaseConfigured = true;
+    document.getElementById('firebase-status').style.display = 'block';
+    document.getElementById('firebase-status').textContent = '在線';
+    document.getElementById('firebase-status').className = 'online';
+  }
+} catch(e) {
+  console.log('Firebase not configured - offline mode');
+  document.getElementById('firebase-status').style.display = 'block';
+  document.getElementById('firebase-status').textContent = '離線';
+  document.getElementById('firebase-status').className = 'offline';
 }
-function sfxCorrect(){playTone(523,.15,'sine',.2);setTimeout(()=>playTone(659,.15,'sine',.2),100);setTimeout(()=>playTone(784,.2,'sine',.2),200)}
-function sfxWrong(){playTone(200,.3,'sawtooth',.15)}
-function sfxLevelUp(){playTone(440,.1,'sine',.2);setTimeout(()=>playTone(554,.1,'sine',.2),100);setTimeout(()=>playTone(659,.1,'sine',.2),200);setTimeout(()=>playTone(880,.3,'sine',.2),300)}
-function sfxStep(){playTone(300,.05,'triangle',.05)}
-// ============ QUESTIONS ============
-const QUESTIONS=[
-{id:'alg01',topic:'代數',difficulty:1,question:'已知 $b = 3 + a^2$，求當 $a = -6$ 時 $b$ 的值',options:{A:'39',B:'-39',C:'33',D:'-33'},answer:'A'},
+
+// ============================================================
+// QUESTIONS - Phase 1a (original 19) + Phase 1b (40 imported) = 59 total
+// ============================================================
+const QUESTIONS_ORIGINAL = [
+{id:'alg01',topic:'代數',difficulty:1,question:'已知 $b = 3 + a^2$，求當 $a = -6$ 時 $b$ 的值',options:{A:'$39',B:'$-39',C:'$33',D:'$-33$'},answer:'A'},
 {id:'alg02',topic:'代數',difficulty:1,question:'以代數式表示 $x$ 的平方與 $y$ 之積',options:{A:'$x^2y$',B:'$x^2+y$',C:'$x^3-y$',D:'$x^3y$'},answer:'A'},
 {id:'alg03',topic:'代數',difficulty:1,question:'計算 $\\frac{5}{8} + 0.65$ 的值',options:{A:'1.275',B:'0.775',C:'1.175',D:'0.675'},answer:'A'},
 {id:'alg04',topic:'代數',difficulty:1,question:'化簡 $7r - 8 - 4r + 3$',options:{A:'$3r - 5$',B:'$3r - 11$',C:'$11r - 5$',D:'$11r - 11$'},answer:'A'},
@@ -105,59 +255,481 @@ const QUESTIONS=[
 {id:'stat04',topic:'統計',difficulty:2,question:'數據 1, 2, 3, 4, 5 的中位數為',options:{A:'2',B:'3',C:'4',D:'5'},answer:'B'},
 {id:'stat05',topic:'統計',difficulty:1,question:'一副撲克牌有 52 張，抽到紅色的概率為',options:{A:'$\\frac{1}{2}$',B:'$\\frac{1}{4}$',C:'$\\frac{1}{3}$',D:'$\\frac{2}{3}$'},answer:'A'},
 ];
-// ============ GAME STATE ============
-const TILE=48;
-const MAP_COLS=12;
-const MAP_ROWS=9;
-let gameState={hp:100,maxHp:100,xp:0,level:1,questionsAnswered:0,correctAnswers:0};
-function loadState(){
-  const s=localStorage.getItem('mathrpg_v1');
-  if(s){const d=JSON.parse(s);gameState={...gameState,...d};
-    if(gameState.hp<=0)gameState.hp=gameState.maxHp;
+
+const QUESTIONS_PHASE1B = [
+{id:'imp001',topic:'代數',difficulty:1,question:'$-11 + 5 - 1 =$',options:{A:'$-7$',B:'$3$',C:'$39$',D:'$21$'},answer:'A'},
+{id:'imp002',topic:'代數',difficulty:1,question:'$(+23) - (-19) =$',options:{A:'$42$',B:'$43$',C:'$44$',D:'$47$'},answer:'A'},
+{id:'imp003',topic:'代數',difficulty:1,question:'$45 \\div (-9) =$',options:{A:'$-5$',B:'$5$',C:'$38$',D:'$5$'},answer:'A'},
+{id:'imp004',topic:'代數',difficulty:1,question:'化簡 $7r - 8 - 4r + 3$',options:{A:'$3r-5$',B:'$72$',C:'$41$',D:'$12$'},answer:'A'},
+{id:'imp005',topic:'代數',difficulty:1,question:'化簡 $x^6 \\times x^2$',options:{A:'$x^8$',B:'$25$',C:'$26$',D:'$70$'},answer:'A'},
+{id:'imp006',topic:'代數',difficulty:1,question:'解方程 $5x + 3 = 8$',options:{A:'$1$',B:'$2$',C:'$3$',D:'$6$'},answer:'A'},
+{id:'imp007',topic:'代數',difficulty:2,question:'化簡 $\\frac{(+6)+(-8)}{(-2)}$',options:{A:'$1$',B:'$2$',C:'$3$',D:'$6$'},answer:'A'},
+{id:'imp008',topic:'代數',difficulty:1,question:'化簡 $x^{10} \\cdot x^3$',options:{A:'$x^13$',B:'$83$',C:'$2$',D:'$68$'},answer:'A'},
+{id:'imp009',topic:'代數',difficulty:2,question:'化簡 $(6a+2b)-(8a-5b)$',options:{A:'$-2a+7b$',B:'$40$',C:'$93$',D:'$95$'},answer:'A'},
+{id:'imp010',topic:'代數',difficulty:2,question:'已知 $b=3+a^2$，若 $a=-6$，求 $b$',options:{A:'$39$',B:'$40$',C:'$41$',D:'$44$'},answer:'A'},
+{id:'imp011',topic:'代數',difficulty:2,question:'已知 $x=9y-13$，若 $y=-2$，求 $x$',options:{A:'$-31$',B:'$50$',C:'$19$',D:'$22$'},answer:'A'},
+{id:'imp012',topic:'代數',difficulty:2,question:'化簡 $x^2+3x-(2x^2-5x)$',options:{A:'$-x^2+8x$',B:'$68$',C:'$42$',D:'$75$'},answer:'A'},
+{id:'imp013',topic:'代數',difficulty:1,question:'求 12 和 18 的最小公倍數',options:{A:'$36$',B:'$37$',C:'$38$',D:'$41$'},answer:'A'},
+{id:'imp014',topic:'統計',difficulty:1,question:'把 $\\frac{3}{20}$ 化為百分數',options:{A:'$15%$',B:'$20%$',C:'$25%$',D:'$10%$'},answer:'A'},
+{id:'imp015',topic:'統計',difficulty:1,question:'寫出 $A(5,-8)$ 的 $y$ 坐標',options:{A:'$-8$',B:'$2$',C:'$11$',D:'$34$'},answer:'A'},
+{id:'imp016',topic:'代數',difficulty:2,question:'計算 $\\frac{5}{8}+0.65$ 的值',options:{A:'$1.275$',B:'$2.27$',C:'$3.27$',D:'$6.28$'},answer:'A'},
+{id:'imp017',topic:'代數',difficulty:1,question:'以代數式表示 $x$ 的平方與 $y$ 之積',options:{A:'$x^2y$',B:'$x^2+y$',C:'$x^3-y$',D:'$x^3y$'},answer:'A'},
+{id:'imp018',topic:'代數',difficulty:2,question:'展開 $(x+3)(x-5)$',options:{A:'$x^2-2x-15$',B:'$35$',C:'$5$',D:'$91$'},answer:'A'},
+{id:'imp019',topic:'代數',difficulty:1,question:'展開 $8(3a-b)$',options:{A:'$24a-8b$',B:'$7$',C:'$44$',D:'$53$'},answer:'A'},
+{id:'imp020',topic:'代數',difficulty:1,question:'解方程 $15-2x=7$',options:{A:'$4$',B:'$5$',C:'$6$',D:'$9$'},answer:'A'},
+{id:'imp021',topic:'代數',difficulty:2,question:'解方程 $9+2x=18-x$',options:{A:'$3$',B:'$4$',C:'$5$',D:'$8$'},answer:'A'},
+{id:'imp022',topic:'代數',difficulty:2,question:'解方程 $7-3x=-8$',options:{A:'$5$',B:'$6$',C:'$7$',D:'$10$'},answer:'A'},
+{id:'imp023',topic:'幾何',difficulty:1,question:'三角形的內角和為',options:{A:'$180°$',B:'$62$',C:'$30$',D:'$12$'},answer:'A'},
+{id:'imp024',topic:'幾何',difficulty:1,question:'直角三角形兩直角邊為 3 和 4，斜邊為',options:{A:'$5$',B:'$6$',C:'$7$',D:'$10$'},answer:'A'},
+{id:'imp025',topic:'幾何',difficulty:1,question:'圓的半徑為 7，面積為',options:{A:'$49\\pi$',B:'$98\\pi$',C:'$24\\pi$',D:'$54\\pi$'},answer:'A'},
+{id:'imp026',topic:'幾何',difficulty:1,question:'正方形邊長為 5，周界為',options:{A:'$20$',B:'$21$',C:'$22$',D:'$25$'},answer:'A'},
+{id:'imp027',topic:'幾何',difficulty:1,question:'長方形長為 8 闊為 3，面積為',options:{A:'$24$',B:'$25$',C:'$26$',D:'$29$'},answer:'A'},
+{id:'imp028',topic:'統計',difficulty:1,question:'一副撲克牌有 52 張，抽到紅色的概率為',options:{A:'$\\frac{1}{2}$',B:'$\\frac{1}{4}$',C:'$\\frac{1}{3}$',D:'$\\frac{2}{3}$'},answer:'A'},
+{id:'imp029',topic:'統計',difficulty:1,question:'數據 2, 4, 6, 8 的平均數為',options:{A:'$5$',B:'$6$',C:'$7$',D:'$10$'},answer:'A'},
+{id:'imp030',topic:'統計',difficulty:1,question:'數據 1, 2, 3, 4, 5 的中位數為',options:{A:'$3$',B:'$4$',C:'$5$',D:'$8$'},answer:'A'},
+{id:'imp031',topic:'統計',difficulty:1,question:'數據 3, 3, 3, 3 的眾數為',options:{A:'$3$',B:'$4$',C:'$5$',D:'$8$'},answer:'A'},
+{id:'imp032',topic:'代數',difficulty:2,question:'寫出 50 的質因數連乘式',options:{A:'$2\\times5^2$',B:'$73$',C:'$63$',D:'$42$'},answer:'A'},
+{id:'imp033',topic:'統計',difficulty:2,question:'某學校有 60%學生是初中生，初中生中 45%是男生，求隨機選出一個學生的概率',options:{A:'$0.27$',B:'$1.27$',C:'$2.27$',D:'$5.27$'},answer:'A'},
+{id:'imp034',topic:'代數',difficulty:3,question:'小敏把$120000存入銀行，年利率 2.4%，每月複利，1年後可得利息（準確至最接近的元）',options:{A:'$2912$',B:'$2913$',C:'$2914$',D:'$2917$'},answer:'A'},
+{id:'imp035',topic:'代數',difficulty:3,question:'若 $(x-5)+x-3 \\equiv Ax^2+Bx+C$，求 $B^2-A^2$',options:{A:'$5$',B:'$6$',C:'$7$',D:'$10$'},answer:'A'},
+{id:'imp036',topic:'代數',difficulty:2,question:'求直線 $5x+9y-1=0$ 的 x 截距',options:{A:'$\\frac{1}{5}$',B:'$83$',C:'$13$',D:'$47$'},answer:'A'},
+{id:'imp037',topic:'代數',difficulty:3,question:'cos$(90°-A)$·cos$(-A)$/sin$(360°-A)$ =',options:{A:'$-cotA$',B:'$27$',C:'$97$',D:'$85$'},answer:'A'},
+{id:'imp038',topic:'代數',difficulty:2,question:'求方程 $2x^2-6-3x=0$ 的判別式',options:{A:'$57$',B:'$58$',C:'$59$',D:'$62$'},answer:'A'},
+{id:'imp039',topic:'代數',difficulty:2,question:'解方程 $8x^3=\\frac{1}{216}$',options:{A:'$\\frac{1}{2}$',B:'$11$',C:'$4$',D:'$8$'},answer:'A'},
+{id:'imp040',topic:'代數',difficulty:3,question:'若 $y$ 隨 $x^2$ 正變，$x$ 增加 15%，$y$ 增加多少',options:{A:'$32.25%$',B:'$37%$',C:'$42%$',D:'$27%$'},answer:'A'},
+];
+
+// Combined: all questions
+const ALL_QUESTIONS = [...QUESTIONS_ORIGINAL, ...QUESTIONS_PHASE1B];
+console.log(`Total questions loaded: ${ALL_QUESTIONS.length}`);
+
+// ============================================================
+// GAME STATE
+// ============================================================
+const TILE = 48;
+const MAP_COLS = 12;
+const MAP_ROWS = 9;
+
+let gameState = {
+  hp: 100, maxHp:100,xp:0,level:1,questionsAnswered:0,correctAnswers:0,streak:0,maxStreak:0,
+  dailyCorrect:0,dailyTasks:{correct5:false,correct10:false,streak3:false},
+  lastDailyReset:null
+};
+let dailyTasksState = {
+  tasks:[
+    {id:'correct5',name:'答對5題',desc:'答對5道題目',target:5,reward:50,current:0,rewarded:false},
+    {id:'correct10',name:'答對10題',desc:'答對10道題目',target:10,reward:100,current:0,rewarded:false},
+    {id:'streak3',name:'連勝3題',desc:'連續答對3道題目',target:3,reward:75,current:0,rewarded:false},
+  ]
+};
+
+// ============================================================
+// FIREBASE HELPERS
+// ============================================================
+function getPlayerRef(uid){return db.ref('players/'+uid)}
+function getLeaderboardRef(){return db.ref('leaderboard')}
+function getOnlineRef(uid){return db.ref('online/'+uid)}
+
+function syncToFirebase(){
+  if(!firebaseConfigured||!currentUser)return;
+  const updates={level:gameState.level,xp:gameState.xp,hp:gameState.hp,
+    questionsAnswered:gameState.questionsAnswered,correctAnswers:gameState.correctAnswers,
+    streak:gameState.streak,maxStreak:gameState.maxStreak,
+    dailyCorrect:gameState.dailyCorrect,lastPlayed:Date.now()};
+  getPlayerRef(currentUser.uid).update(updates);
+  getLeaderboardRef().child(currentUser.uid).update({
+    name:currentUser.displayName||currentUser.email||'Player',
+    level:gameState.level,xp:gameState.xp,lastPlayed:Date.now()
+  });
+}
+
+function loadFromFirebase(uid){
+  return getPlayerRef(uid).once('value').then(snap=>{
+    if(snap.exists()){
+      const d=snap.val();
+      gameState={...gameState,...d};
+      updateHUD();
+    }
+  });
+}
+
+let batchQueue=[];
+let lastSyncTime=0;
+const SYNC_INTERVAL=30000; // 30 seconds
+
+function queueAnswer(questionId,isCorrect,difficulty){
+  batchQueue.push({questionId,isCorrect,difficulty,timestamp:Date.now()});
+  const now=Date.now();
+  if(now-lastSyncTime>SYNC_INTERVAL){flushBatch();lastSyncTime=now;}
+}
+
+function flushBatch(){
+  if(!currentUser||batchQueue.length===0)return;
+  const payload={uid:currentUser.uid,name:currentUser.displayName||'Player',
+    ...gameState,answers:batchQueue.slice(-20),timestamp:Date.now()};
+  // Send to GAS if configured
+  if(gasUrl){
+    fetch(gasUrl,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'sync',...payload})}).catch(()=>{});
+  }
+  batchQueue=[];
+}
+
+function syncOnlineStatus(){
+  if(!firebaseConfigured||!currentUser)return;
+  const onRef=getOnlineRef(currentUser.uid);
+  onRef.set({name:currentUser.displayName||'Player',lastSeen:Date.now()});
+  onRef.onDisconnect().remove();
+}
+
+// ============================================================
+// GAS (Google Apps Script) HELPERS
+// ============================================================
+function submitToGAS(answerData){
+  if(!gasUrl)return;
+  fetch(gasUrl,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'submitAnswer',uid:currentUser?.uid,...answerData})}).catch(()=>{});
+}
+
+// ============================================================
+// AUTHENTICATION
+// ============================================================
+function signIn(){
+  if(!firebaseConfigured){alert('Firebase未配置，無法登入。\n請查看 SETUP.md 了解如何配置。');return;}
+  const provider=new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({hd:'lsh.edu.hk'}); // School domain
+  firebase.auth().signInWithPopup(provider).then(result=>{
+    currentUser=result.user;
+    updateAuthUI();
+    loadFromFirebase(currentUser.uid).then(()=>syncToFirebase());
+    syncOnlineStatus();
+  }).catch(err=>{console.error(err);alert('登入失敗: '+err.message);});
+}
+
+function signOut(){
+  if(!firebaseConfigured){return;}
+  if(currentUser)getOnlineRef(currentUser.uid).remove();
+  firebase.auth().signOut().then(()=>{
+    currentUser=null;updateAuthUI();
+  });
+}
+
+function updateAuthUI(){
+  const loginBtn=document.getElementById('login-btn');
+  const logoutBtn=document.getElementById('logout-btn');
+  const userInfo=document.getElementById('user-info');
+  const userName=document.getElementById('user-name');
+  const userLevel=document.getElementById('user-level');
+  if(currentUser&&firebaseConfigured){
+    loginBtn.style.display='none';
+    logoutBtn.style.display='block';
+    userInfo.style.display='flex';
+    userName.textContent=currentUser.displayName||currentUser.email||'Player';
+    userLevel.textContent='Lv.'+gameState.level;
+  } else {
+    loginBtn.style.display='block';
+    logoutBtn.style.display='none';
+    userInfo.style.display='none';
   }
 }
-function saveState(){localStorage.setItem('mathrpg_v1',JSON.stringify(gameState))}
+
+function onAuthStateChanged(user){
+  currentUser=user;
+  updateAuthUI();
+  if(user){syncOnlineStatus();loadFromFirebase(user.uid);}
+}
+
+// ============================================================
+// STATE MANAGEMENT
+// ============================================================
+function loadState(){
+  const s=localStorage.getItem('mathrpg_v1');
+  if(s){try{const d=JSON.parse(s);gameState={...gameState,...d};}catch(e){}}
+  // Reset daily if new day
+  const today=new Date().toDateString();
+  if(gameState.lastDailyReset!==today){
+    gameState.dailyCorrect=0;
+    gameState.dailyTasks={correct5:false,correct10:false,streak3:false};
+    gameState.lastDailyReset=today;
+    saveState();
+  }
+  updateHUD();updateStreakUI();
+}
+
+function saveState(){
+  localStorage.setItem('mathrpg_v1',JSON.stringify(gameState));
+}
+
+function updateHUD(){
+  const hpPct=Math.max(0,gameState.hp/gameState.maxHp*100);
+  document.getElementById('hp-bar').style.width=hpPct+'%';
+  document.getElementById('hp-text').textContent=Math.round(gameState.hp);
+  const xpPct=gameState.xp/(100*gameState.level)*100;
+  document.getElementById('xp-bar').style.width=Math.min(100,xpPct)+'%';
+  document.getElementById('xp-text').textContent=gameState.xp;
+  document.getElementById('level-text').textContent='Lv.'+gameState.level;
+  document.getElementById('user-level')&&(document.getElementById('user-level').textContent='Lv.'+gameState.level);
+}
+
+function updateStreakUI(){
+  const el=document.getElementById('streak-display');
+  const num=document.getElementById('streak-num');
+  if(gameState.streak>=2){
+    el.classList.add('active');
+    num.textContent=gameState.streak;
+  } else {
+    el.classList.remove('active');
+  }
+}
+
 function addXP(amt){
   gameState.xp+=amt;
   const needed=100*gameState.level;
-  if(gameState.xp>=needed){gameState.xp-=needed;gameState.level++;sfxLevelUp();showLevelUp();}
+  if(gameState.xp>=needed){
+    gameState.xp-=needed;gameState.level++;
+    sfxLevelUp();showLevelUp();
+  }
   saveState();updateHUD();
+  if(currentUser)syncToFirebase();
 }
+
 function loseHP(amt){
   gameState.hp=Math.max(0,gameState.hp-amt);
-  if(gameState.hp<=0){gameState.hp=gameState.maxHp;gameState.xp=Math.max(0,gameState.xp-10);}
+  gameState.streak=0;updateStreakUI();
+  if(gameState.hp<=0){
+    gameState.hp=gameState.maxHp;
+    gameState.xp=Math.max(0,gameState.xp-10);
+  }
   saveState();updateHUD();
+  if(currentUser)syncToFirebase();
 }
-function updateHUD(){
-  document.getElementById('hp-bar').style.width=(gameState.hp/gameState.maxHp*100)+'%';
-  document.getElementById('hp-text').textContent=Math.round(gameState.hp);
-  document.getElementById('xp-bar').style.width=(gameState.xp/(100*gameState.level)*100)+'%';
-  document.getElementById('level-text').textContent='Lv.'+gameState.level;
-}
+
 function showLevelUp(){
   document.getElementById('level-up').style.display='flex';
   document.getElementById('level-up-info').textContent='等級 '+gameState.level;
-  setTimeout(()=>{document.getElementById('level-up').style.display='none'},2000);
+  setTimeout(()=>{document.getElementById('level-up').style.display='none';},2500);
 }
-function showMenu(){document.getElementById('menu').style.display='flex'}
+
+function checkDailyTasks(){
+  // Update daily task progress
+  const dts=dailyTasksState.tasks;
+  dts[0].current=gameState.dailyCorrect;
+  dts[1].current=gameState.dailyCorrect;
+  dts[2].current=gameState.streak;
+  // Check completions and rewards
+  dts.forEach(t=>{
+    if(!t.rewarded&&t.current>=t.target){
+      t.rewarded=true;
+      addXP(t.reward);
+    }
+  });
+  saveState();
+}
+
+function showLevelUpInfo(){}
+
+// ============================================================
+// MENU & PANELS
+// ============================================================
+function showMenu(){
+  const info=document.getElementById('menu-player-info');
+  info.textContent=`Lv.${gameState.level} | 總答題:${gameState.questionsAnswered} | 正確:${gameState.correctAnswers}`;
+  document.getElementById('menu').style.display='flex';
+}
 function closeMenu(){document.getElementById('menu').style.display='none'}
-function resetGame(){localStorage.removeItem('mathrpg_v1');location.reload()}
-function renderMath(el,tex){
-  if(window.katex){try{katex.render(tex,el,{throwOnError:false,displayMode:true});}catch(e){el.textContent=tex;}}
-  else{el.textContent=tex;}
+
+function showLeaderboard(){
+  document.getElementById('leaderboard-panel').style.display='flex';
+  renderLeaderboard();
 }
-// ============ PHASER GAME ============
+
+function closeLeaderboard(){document.getElementById('leaderboard-panel').style.display='none'}
+
+function renderLeaderboard(){
+  const list=document.getElementById('leaderboard-list');
+  if(!firebaseConfigured){
+    list.innerHTML='<div style="color:#888;text-align:center;padding:20px">Firebase未配置</div>';
+    return;
+  }
+  getLeaderboardRef().orderByChild('level').limitToLast(20).once('value').then(snap=>{
+    const data=[];
+    snap.forEach(child=>{data.push({uid:child.key,...child.val()});});
+    data.sort((a,b)=>b.level-a.level||b.xp-a.xp);
+    if(data.length===0){
+      list.innerHTML='<div style="color:#888;text-align:center;padding:20px">暫無排行榜數據</div>';return;
+    }
+    list.innerHTML=data.slice(0,20).map((p,i)=>{
+      const rankClass=i===0?'gold':i===1?'silver':i===2?'bronze':'';
+      const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`;
+      return `<div class="lb-row"><span class="lb-rank ${rankClass}">${medal}</span><span class="lb-name">${p.name||'Player'}</span><span class="lb-level">Lv.${p.level}</span><span class="lb-xp">${p.xp||0}XP</span></div>`;
+    }).join('');
+  }).catch(()=>{
+    list.innerHTML='<div style="color:#888;text-align:center;padding:20px">載入失敗</div>';
+  });
+}
+
+function showDailyTasks(){
+  document.getElementById('daily-tasks-panel').style.display='flex';
+  renderDailyTasks();
+}
+
+function closeDailyTasks(){document.getElementById('daily-tasks-panel').style.display='none'}
+
+function renderDailyTasks(){
+  const list=document.getElementById('tasks-list');
+  const dts=dailyTasksState.tasks;
+  list.innerHTML=dts.map(t=>{
+    const pct=Math.min(100,t.current/t.target*100);
+    const done=pct>=100;
+    return `<div class="task-row ${done?'task-complete':''}">
+      <span class="task-icon">${done?'✅':'🎯'}</span>
+      <div class="task-info">
+        <div class="task-name">${t.name}</div>
+        <div class="task-desc">${t.desc}</div>
+        <div style="width:100%;height:4px;background:#2d2d4a;border-radius:2px;margin-top:4px">
+          <div style="width:${pct}%;height:100%;background:${done?'#52C41A':'#4A90D9'};border-radius:2px"></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+        <span class="task-progress">${t.current}/${t.target}</span>
+        <span class="task-reward">+${t.reward}XP</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// SOUND
+// ============================================================
+const AudioCtx=window.AudioContext||window.webkitAudioContext;
+let audioCtx=null;
+function initAudio(){if(!audioCtx)audioCtx=new AudioCtx()}
+function playTone(freq,dur,type='square',vol=.15){
+  try{initAudio();const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type=type;o.frequency.value=freq;
+  g.gain.setValueAtTime(vol,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);
+  o.connect(g);g.connect(audioCtx.destination);
+  o.start();o.stop(audioCtx.currentTime+dur);}catch(e){}
+}
+function sfxCorrect(){playTone(523,.15,'sine',.2);setTimeout(()=>playTone(659,.15,'sine',.2),100);setTimeout(()=>playTone(784,.2,'sine',.2),200);}
+function sfxWrong(){playTone(200,.3,'sawtooth',.15)}
+function sfxLevelUp(){playTone(440,.1,'sine',.2);setTimeout(()=>playTone(554,.1,'sine',.2),100);setTimeout(()=>playTone(659,.1,'sine',.2),200);setTimeout(()=>playTone(880,.3,'sine',.2),300);}
+function sfxStep(){playTone(300,.05,'triangle',.05)}
+function sfxStreak(){playTone(880,.1,'sine',.2);setTimeout(()=>playTone(1100,.15,'sine',.2),80);}
+
+// ============================================================
+// MATH RENDERING
+// ============================================================
+function renderMath(el,tex){
+  if(window.katex){
+    try{katex.render(tex,el,{throwOnError:false,displayMode:true});}catch(e){el.textContent=tex;}
+  } else {el.textContent=tex;}
+}
+
+// ============================================================
+// QUIZ SYSTEM
+// ============================================================
+let currentQuiz={};
+let quizQuestionCount=0;
+
+function startQuiz(topic,name){
+  // Get questions for this topic from ALL questions
+  const filtered=ALL_QUESTIONS.filter(q=>q.topic===topic);
+  const q=filtered[Math.floor(Math.random()*filtered.length)]||ALL_QUESTIONS[Math.floor(Math.random()*ALL_QUESTIONS.length)];
+  currentQuiz=q;
+  quizQuestionCount++;
+  
+  document.getElementById('quiz-overlay').style.display='flex';
+  document.getElementById('quiz-topic').textContent=name+' 挑戰';
+  document.getElementById('quiz-streak').textContent='🔥'+gameState.streak+'連勝';
+  document.getElementById('quiz-qnum').textContent='Q'+quizQuestionCount;
+  
+  const qEl=document.getElementById('quiz-question');
+  qEl.innerHTML='';
+  renderMath(qEl,q.question);
+  
+  const optsEl=document.getElementById('quiz-options');
+  optsEl.innerHTML='';
+  const keys=Object.keys(q.options);
+  keys.forEach(k=>{
+    const btn=document.createElement('button');
+    btn.className='quiz-option';
+    const optEl=document.createElement('span');
+    renderMath(optEl,q.options[k]);
+    btn.appendChild(optEl);
+    btn.dataset.key=k;
+    btn.onclick=()=>submitAnswer(k);
+    optsEl.appendChild(btn);
+  });
+  
+  document.getElementById('quiz-feedback').textContent='';
+  document.getElementById('quiz-feedback').className='';
+}
+
+function submitAnswer(key){
+  const btns=document.querySelectorAll('.quiz-option');
+  btns.forEach(b=>b.classList.add('disabled'));
+  const isCorrect=(key===currentQuiz.answer);
+  
+  document.querySelector(`.quiz-option[data-key="${key}"]`).classList.add(isCorrect?'correct':'wrong');
+  if(!isCorrect){
+    document.querySelector(`.quiz-option[data-key="${currentQuiz.answer}"]`).classList.add('correct');
+  }
+  
+  const xpGain=20+currentQuiz.difficulty*5;
+  
+  if(isCorrect){
+    sfxCorrect();
+    // Streak bonus
+    gameState.streak++;
+    if(gameState.streak>gameState.maxStreak)gameState.maxStreak=gameState.streak;
+    const streakBonus=gameState.streak>=3?Math.floor(gameState.streak*2):0;
+    addXP(xpGain+streakBonus);
+    gameState.correctAnswers++;
+    gameState.dailyCorrect++;
+    const bonusText=streakBonus>0?` +${streakBonus}連勝`:'';
+    document.getElementById('quiz-feedback').textContent=`✓ 正確！ +${xpGain}${bonusText} XP`;
+    document.getElementById('quiz-feedback').className='correct';
+    if(gameState.streak>=3)sfxStreak();
+    queueAnswer(currentQuiz.id,true,currentQuiz.difficulty);
+    submitToGAS({questionId:currentQuiz.id,answer:key,isCorrect:true,difficulty:currentQuiz.difficulty});
+  } else {
+    sfxWrong();
+    gameState.streak=0;
+    loseHP(20);
+    document.getElementById('quiz-feedback').textContent='✗ 錯誤！ -20 HP';
+    document.getElementById('quiz-feedback').className='wrong';
+    queueAnswer(currentQuiz.id,false,currentQuiz.difficulty);
+    submitToGAS({questionId:currentQuiz.id,answer:key,isCorrect:false,difficulty:currentQuiz.difficulty});
+  }
+  
+  gameState.questionsAnswered++;
+  checkDailyTasks();
+  updateStreakUI();
+  saveState();
+  setTimeout(exitQuiz,1500);
+}
+
+function exitQuiz(){
+  document.getElementById('quiz-overlay').style.display='none';
+}
+
+// ============================================================
+// PHASER GAME
+// ============================================================
 const COLORS={floor:'#2d2d4a',wall:'#4a4a6a',entrance:'#3d5a3d',classroom:'#4A90D9',door:'#8B6914'};
 const ROOMS=[
-{id:'alg',name:'代數房',topic:'代數',tileX:2,tileY:2,w:3,h:2,color:'#4A90D9'},
-{id:'geo',name:'幾何房',topic:'幾何',tileX:7,tileY:2,w:3,h:2,color:'#52C41A'},
-{id:'stat',name:'統計房',topic:'統計',tileX:4,tileY:5,w:4,h:2,color:'#FAAD14'},
+  {id:'alg',name:'代數房',topic:'代數',tileX:2,tileY:2,w:3,h:2,color:'#4A90D9'},
+  {id:'geo',name:'幾何房',topic:'幾何',tileX:7,tileY:2,w:3,h:2,color:'#52C41A'},
+  {id:'stat',name:'統計房',topic:'統計',tileX:4,tileY:5,w:4,h:2,color:'#FAAD14'},
 ];
+
 class MainScene extends Phaser.Scene{
   constructor(){super({key:'Main'});this.player=null;this.cursors=null;this.joystick={x:0,y:0};this.lastTile=null;this.lastRoom=null;}
-
+  
   preload(){this.createPixelTextures();}
-
+  
   create(){
     this.physics.world.setBounds(0,0,MAP_COLS*TILE,MAP_ROWS*TILE);
     this.drawMap();
@@ -169,10 +741,12 @@ class MainScene extends Phaser.Scene{
     this.cameras.main.setBounds(0,0,MAP_COLS*TILE,MAP_ROWS*TILE);
     this.cameras.main.startFollow(this.player,true,.8,.8);
     this.input.on('pointerdown',this.handleTap,this);
-    this.HPRegen=this.time.addEvent({delay:3000,callback:()=>{if(gameState.hp<gameState.maxHp){gameState.hp=Math.min(gameState.maxHp,gameState.hp+1);updateHUD();}},loop:true});
+    this.HPRegen=this.time.addEvent({delay:3000,callback:()=>{
+      if(gameState.hp<gameState.maxHp){gameState.hp=Math.min(gameState.maxHp,gameState.hp+1);updateHUD();}
+    },loop:true});
     updateHUD();
   }
-
+  
   createPixelTextures(){
     const mk=(key,w,h,draw)=>{const g=this.make.graphics({add:false});draw(g);g.generateTexture(key,w,h);g.destroy();};
     mk('floor',TILE,TILE,g=>{g.fillStyle(0x8b5d8b);g.fillRect(0,0,TILE,TILE);g.fillStyle(0x956799);g.fillRect(0,0,TILE/2,TILE/2);g.fillRect(TILE/2,TILE/2,TILE/2,TILE/2);});
@@ -189,7 +763,7 @@ class MainScene extends Phaser.Scene{
     });
     mk('heart',16,16,g=>{g.fillStyle(0xf5222d);g.fillCircle(8,8,7);g.fillStyle(0xff6464);g.fillCircle(6,6,3);});
   }
-
+  
   drawMap(){
     const floor=this.add.group();
     for(let y=0;y<MAP_ROWS;y++)for(let x=0;x<MAP_COLS;x++){
@@ -208,19 +782,27 @@ class MainScene extends Phaser.Scene{
       sign.setOrigin(.5);
     });
   }
-
+  
   getTile(x,y){
     if(x<1||x>=MAP_COLS-1||y<1||y>=MAP_ROWS-1)return'wall';
     if(y===7&&x>=4&&x<=6)return'entrance';
     for(const r of ROOMS)if(x>=r.tileX&&x<r.tileX+r.w&&y>=r.tileY&&y<r.tileY+r.h)return'classroom';
     return'floor';
   }
-
+  
   setupJoystick(){
     const zone=document.getElementById('joystick-zone');
     const knob=document.getElementById('joystick-knob');
     let drag=false,centerX=0,centerY=0;
-    const handle=(e)=>{const t=e.touches?e.touches[0]:e;const dx=t.clientX-centerX,dy=t.clientY-centerY;const dist=Math.min(40,Math.sqrt(dx*dx+dy*dy));const ang=Math.atan2(dy,dx);this.joystick.x=Math.cos(ang)*dist/40;this.joystick.y=Math.sin(ang)*dist/40;knob.style.transform=`translate(${Math.cos(ang)*dist}px,${Math.sin(ang)*dist}px)`;};
+    const handle=(e)=>{
+      const t=e.touches?e.touches[0]:e;
+      const dx=t.clientX-centerX,dy=t.clientY-centerY;
+      const dist=Math.min(40,Math.sqrt(dx*dx+dy*dy));
+      const ang=Math.atan2(dy,dx);
+      this.joystick.x=Math.cos(ang)*dist/40;
+      this.joystick.y=Math.sin(ang)*dist/40;
+      knob.style.transform=`translate(${Math.cos(ang)*dist}px,${Math.sin(ang)*dist}px)`;
+    };
     zone.addEventListener('mousedown',e=>{drag=true;zone.style.display='flex';centerX=e.clientX;centerY=e.clientY;zone.style.left=(centerX-60)+'px';zone.style.top=(centerY-60)+'px';handle(e);});
     window.addEventListener('mousemove',e=>{if(drag)handle(e);});
     window.addEventListener('mouseup',()=>{drag=false;this.joystick={x:0,y:0};knob.style.transform='translate(0,0)';});
@@ -228,13 +810,13 @@ class MainScene extends Phaser.Scene{
     zone.addEventListener('touchmove',e=>{e.preventDefault();if(drag)handle(e);},{passive:false});
     zone.addEventListener('touchend',()=>{drag=false;this.joystick={x:0,y:0};knob.style.transform='translate(0,0)';});
   }
-
+  
   handleTap(pointer){
     const worldPt=this.cameras.main.getWorldPoint(pointer.x,pointer.y);
     const tx=Math.floor(worldPt.x/TILE),ty=Math.floor(worldPt.y/TILE);
     for(const r of ROOMS){if(tx>=r.tileX&&tx<r.tileX+r.w&&ty>=r.tileY&&ty<r.tileY+r.h){startQuiz(r.topic,r.name);return;}}
   }
-
+  
   update(){
     const speed=160;
     let vx=0,vy=0;
@@ -250,7 +832,6 @@ class MainScene extends Phaser.Scene{
       const tileKey=tileX+'_'+tileY;
       if(this.lastTile!==tileKey){this.lastTile=tileKey;sfxStep();}
     }
-    // Auto-trigger quiz when entering a room
     const px=Math.floor(this.player.x/TILE),py=Math.floor(this.player.y/TILE);
     if(!document.getElementById('quiz-overlay').style.display||document.getElementById('quiz-overlay').style.display==='none'){
       for(const r of ROOMS){
@@ -264,50 +845,26 @@ class MainScene extends Phaser.Scene{
   }
 }
 
-// ============ QUIZ ============
-let currentQuiz={};
-function startQuiz(topic,name){
-  const filtered=QUESTIONS.filter(q=>q.topic===topic);
-  const q=filtered[Math.floor(Math.random()*filtered.length)]||QUESTIONS[Math.floor(Math.random()*QUESTIONS.length)];
-  currentQuiz=q;
-  document.getElementById('quiz-overlay').style.display='flex';
-  document.getElementById('quiz-topic').textContent=name+' 挑戰';
-  const qEl=document.getElementById('quiz-question');
-  renderMath(qEl,q.question);
-  const optsEl=document.getElementById('quiz-options');
-  optsEl.innerHTML='';
-  const keys=Object.keys(q.options);
-  keys.forEach(k=>{
-    const btn=document.createElement('button');
-    btn.className='quiz-option';
-    const optEl=document.createElement('span');
-    renderMath(optEl,q.options[k]);
-    btn.appendChild(optEl);
-    btn.dataset.key=k;
-    btn.onclick=()=>submitAnswer(k);
-    optsEl.appendChild(btn);
-  });
-  document.getElementById('quiz-feedback').textContent='';
-  document.getElementById('quiz-feedback').className='';
+// ============================================================
+// INIT
+// ============================================================
+function resetGame(){
+  if(confirm('確定要重新開始嗎？所有進度將會清除。')){
+    localStorage.removeItem('mathrpg_v1');
+    location.reload();
+  }
 }
-function submitAnswer(key){
-  const btns=document.querySelectorAll('.quiz-option');
-  btns.forEach(b=>b.classList.add('disabled'));
-  const isCorrect=key===currentQuiz.answer;
-  document.querySelector(`.quiz-option[data-key="${key}"]`).classList.add(isCorrect?'correct':'wrong');
-  if(!isCorrect)document.querySelector(`.quiz-option[data-key="${currentQuiz.answer}"]`).classList.add('correct');
-  if(isCorrect){sfxCorrect();addXP(20+currentQuiz.difficulty*5);gameState.correctAnswers++;document.getElementById('quiz-feedback').textContent='✓ 正確！ +'+(20+currentQuiz.difficulty*5)+' XP';document.getElementById('quiz-feedback').className='correct';}
-  else{sfxWrong();loseHP(20);document.getElementById('quiz-feedback').textContent='✗ 錯誤！ -20 HP';document.getElementById('quiz-feedback').className='wrong';}
-  gameState.questionsAnswered++;saveState();
-  setTimeout(exitQuiz,1500);
+
+// Load Firebase auth state listener
+if(firebaseConfigured){
+  firebase.auth().onAuthStateChanged(onAuthStateChanged);
 }
-function exitQuiz(){
-  document.getElementById('quiz-overlay').style.display='none';
-}
-// ============ INIT ============
+
+// Load state and init game
 loadState();
 const isMobile=/Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 if(isMobile)document.getElementById('joystick-zone').style.display='block';
+
 const game=new Phaser.Game({
   type:Phaser.AUTO,
   parent:'game-container',
@@ -319,6 +876,11 @@ const game=new Phaser.Game({
   scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   backgroundColor:'#1A1A2E'
 });
+
+// Periodic batch sync
+setInterval(flushBatch,30000);
+// Sync online status every minute
+setInterval(syncOnlineStatus,60000);
 </script>
 </body>
 </html>
