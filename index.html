@@ -69,6 +69,12 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 .quiz-nav-btn:hover{background:#3d5a7a}
 
 /* ===== LEVEL UP ===== */
+#achievement-toast{position:fixed;top:-100px;left:50%;transform:translateX(-50%);z-index:500;background:linear-gradient(135deg,#1a1a2e,#16213e);border:2px solid #FAAD14;border-radius:12px;padding:12px 20px;color:#fff;font-size:14px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(250,173,20,.3);transition:top .5s;max-width:320px;width:90%;pointer-events:none}
+#achievement-toast.show{top:20px}
+#achievement-toast .ach-icon{font-size:28px}
+#achievement-toast .ach-name{font-weight:700;color:#FAAD14}
+#achievement-toast .ach-desc{font-size:12px;color:#aaa}
+
 #level-up{display:none;position:fixed;inset:0;z-index:300;background:rgba(26,26,46,.92);flex-direction:column;align-items:center;justify-content:center}
 .level-up-text{font-size:48px;color:#FAAD14;font-weight:900;text-align:center;animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
@@ -94,6 +100,15 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 .card-cell .card-name{font-size:8px;color:#fff;text-align:center;padding:2px;line-height:1.2}
 .card-cell .card-rarity{position:absolute;top:2px;right:3px;font-size:8px;font-weight:700}
 .card-rarity.common{color:#aaa}.card-rarity.rare{color:#1890FF}.card-rarity.legendary{color:#FAAD14}
+
+/* Achievement styles */
+#achievement-grid .ach-cell{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(250,173,20,.2);cursor:default}
+#achievement-grid .ach-cell.unlocked{background:linear-gradient(135deg,rgba(250,173,20,.15),rgba(250,173,20,.05));border-color:#FAAD14}
+#achievement-grid .ach-cell:not(.unlocked){opacity:.5}
+#achievement-grid .ach-icon{font-size:24px;min-width:36px;text-align:center}
+#achievement-grid .ach-name{font-size:13px;font-weight:700;color:#FAAD14}
+#achievement-grid .ach-desc{font-size:11px;color:#aaa}
+#achievement-grid .ach-reward{font-size:10px;color:#52C41A}
 #card-detail-overlay{display:none;position:fixed;inset:0;z-index:260;background:rgba(26,26,46,.95);flex-direction:column;align-items:center;justify-content:center}
 #card-detail-overlay.active{display:flex}
 #card-detail-card{width:200px;aspect-ratio:3/4;background:#16213e;border-radius:16px;border:4px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;position:relative}
@@ -214,9 +229,18 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 </div>
 
 <!-- Level Up -->
+<div id="achievement-toast"></div>
+
 <div id="level-up"><div class="level-up-text">⬆️ 升級!</div><div class="level-up-sub" id="level-up-info">等級 2</div></div>
 
 <!-- CARD OVERLAYS -->
+<div id="achievement-overlay" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('active');">
+  <div class="modal-card" style="background:linear-gradient(135deg,#1a1a2e,#16213e);border:2px solid #FAAD14;max-width:600px">
+    <div class="modal-header" style="color:#FAAD14"><span>🏅 成就系統</span><span id="achievement-count">0</span>/20<button class="modal-close" onclick="this.closest('.modal-overlay').classList.remove('active')" style="color:#FAAD14">✕</button></div>
+    <div id="achievement-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;max-height:70vh;overflow-y:auto;padding:8px"></div>
+  </div>
+</div>
+
 <div id="card-overlay">
   <div id="card-collection-header">
     <div id="card-collection-title">🃏 卡牌收藏</div>
@@ -259,6 +283,7 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
   <button class="menu-btn gold" onclick="showDailyTasks();closeMenu();">📋 每日任務</button>
   <button class="menu-btn" onclick="showLeaderboard();closeMenu();">🏆 排行榜</button>
   <button class="menu-btn" onclick="showCardCollection();closeMenu();">🃏 卡牌收藏 (<span id="menu-card-count">0</span>)</button>
+  <button class="menu-btn" onclick="showAchievements();closeMenu();">🏅 成就 (<span id="menu-ach-count">0</span>/20)</button>
   <button class="menu-btn danger" onclick="resetGame()">重新開始</button>
   <button class="menu-btn" onclick="closeMenu()">繼續遊戲</button>
 </div>
@@ -385,6 +410,60 @@ const QUESTIONS_PHASE1B = [
 const ALL_QUESTIONS = [...QUESTIONS_ORIGINAL, ...QUESTIONS_PHASE1B];
 console.log(`Total questions loaded: ${ALL_QUESTIONS.length}`);
 
+// Phase 2 new questions (12 rooms, new topics)
+const QUESTIONS_PHASE2 = [
+  // 概率 (1 existing + 4 new)
+  {id:'prob01',topic:'概率',difficulty:1,question:'擲一枚硬幣，出現正面既概率係',options:{A:'$\frac{1}{3}$',B:'$\frac{1}{2}$',C:'$\frac{2}{3}$',D:'1'},answer:'B'},
+  {id:'prob02',topic:'概率',difficulty:1,question:'袋中有 3 個紅球、2 個藍球，隨機拎一個，拎到紅球既概率係',options:{A:'$\frac{2}{5}$',B:'$\frac{3}{5}$',C:'$\frac{1}{2}$',D:'$\frac{3}{2}$'},answer:'B'},
+  {id:'prob03',topic:'概率',difficulty:2,question:'擲兩枚硬幣，至少有一個係反面既概率係',options:{A:'$\frac{1}{4}$',B:'$\frac{1}{2}$',C:'$\frac{3}{4}$',D:'$\frac{1}{3}$'},answer:'C'},
+  {id:'prob04',topic:'概率',difficulty:2,question:'擲一枚骰仔，擲到 3 或 5 既概率係',options:{A:'$\frac{1}{6}$',B:'$\frac{1}{3}$',C:'$\frac{1}{2}$',D:'$\frac{2}{3}$'},answer:'B'},
+  // 函數 (1 existing + 4 new)
+  {id:'func01',topic:'函數',difficulty:1,question:'若 $f(x)=3x+2$, 求 $f(4)$',options:{A:'14',B:'12',C:'10',D:'8'},answer:'A'},
+  {id:'func02',topic:'函數',difficulty:2,question:'若 $g(x)=x^2-1$, 求 $g(-3)$',options:{A:'8',B:'6',C:'10',D:'12'},answer:'A'},
+  {id:'func03',topic:'函數',difficulty:2,question:'函數 $y=2x-5$ 當 $x=0$ 時，$y$ 等於',options:{A:'5',B:'-5',C:'2',D:'-2'},answer:'B'},
+  {id:'func04',topic:'函數',difficulty:3,question:'若 $f(x)=x^2+3x$, 求 $f(2)-f(1)$',options:{A:'6',B:'7',C:'8',D:'9'},answer:'A'},
+  // 方程 (1 existing + 4 new)
+  {id:'eq01',topic:'方程',difficulty:1,question:'解方程 $2x+6=14$',options:{A:'$x=4$',B:'$x=5$',C:'$x=3$',D:'$x=2$'},answer:'A'},
+  {id:'eq02',topic:'方程',difficulty:2,question:'解方程 $3x-5=16$',options:{A:'$x=7$',B:'$x=6$',C:'$x=5$',D:'$x=8$'},answer:'A'},
+  {id:'eq03',topic:'方程',difficulty:2,question:'解方程 $5x+3=2x+15$',options:{A:'$x=4$',B:'$x=3$',C:'$x=5$',D:'$x=2$'},answer:'A'},
+  {id:'eq04',topic:'方程',difficulty:2,question:'若 $4(x-1)=12$, 求 $x$',options:{A:'$x=4$',B:'$x=3$',C:'$x=5$',D:'$x=2$'},answer:'A'},
+  // 面積 (1 existing + 4 new)
+  {id:'area01',topic:'面積',difficulty:1,question:'長方形長 8cm，闊 5cm，求面積',options:{A:'40 cm²',B:'26 cm²',C:'13 cm²',D:'20 cm²'},answer:'A'},
+  {id:'area02',topic:'面積',difficulty:1,question:'正方形邊長 7cm，求面積',options:{A:'49 cm²',B:'28 cm²',C:'14 cm²',D:'21 cm²'},answer:'A'},
+  {id:'area03',topic:'面積',difficulty:2,question:'長方形面積 36 cm²，長 9cm，闊幾多？',options:{A:'4cm',B:'5cm',C:'6cm',D:'3cm'},answer:'A'},
+  {id:'area04',topic:'面積',difficulty:2,question:'三角形底 10cm，高 6cm，求面積',options:{A:'30 cm²',B:'60 cm²',C:'15 cm²',D:'45 cm²'},answer:'A'},
+  // 坐標 (1 existing + 4 new)
+  {id:'coord01',topic:'坐標',difficulty:1,question:'點 $(3,4)$ 在第幾象限？',options:{A:'第一象限',B:'第二象限',C:'第三象限',D:'第四象限'},answer:'A'},
+  {id:'coord02',topic:'坐標',difficulty:2,question:'點 $(2,-5)$ 的 $y$ 坐標係',options:{A:'2',B:'-5',C:'5',D:'-2'},answer:'B'},
+  {id:'coord03',topic:'坐標',difficulty:2,question:'兩點 $(1,2)$ 同 $(1,8)$ 之間既距離係',options:{A:'6',B:'7',C:'8',D:'9'},answer:'A'},
+  {id:'coord04',topic:'坐標',difficulty:2,question:'點 $(3,0)$ 位於 $x$ 軸上嗎？',options:{A:'是',B:'否',C:'不能確定',D:'以上皆非'},answer:'A'},
+  // 比率 (1 existing + 4 new)
+  {id:'ratio01',topic:'比率',difficulty:1,question:'比例 $3:4 = 6:x$ 中 $x$ 既值係',options:{A:'8',B:'6',C:'4',D:'12'},answer:'A'},
+  {id:'ratio02',topic:'比率',difficulty:2,question:'若 $a:b=5:3$，且 $a=15$，求 $b$',options:{A:'9',B:'12',C:'6',D:'10'},answer:'A'},
+  {id:'ratio03',topic:'比率',difficulty:2,question:'男：女 = 4：5，全班 36 人，女生有幾多人？',options:{A:'20',B:'16',C:'15',D:'18'},answer:'A'},
+  {id:'ratio04',topic:'比率',difficulty:2,question:'若 $x:y=2:3$，且 $x+y=25$，求 $x$',options:{A:'10',B:'8',C:'12',D:'15'},answer:'A'},
+  // 數列 (1 existing + 4 new)
+  {id:'seq01',topic:'數列',difficulty:1,question:'數列 2,5,8,11,... 第5項係',options:{A:'14',B:'15',C:'17',D:'13'},answer:'A'},
+  {id:'seq02',topic:'數列',difficulty:2,question:'等差數列 3,7,11,... 第10項',options:{A:'39',B:'40',C:'41',D:'42'},answer:'A'},
+  {id:'seq03',topic:'數列',difficulty:2,question:'等比數列 2,6,18,... 第4項係',options:{A:'54',B:'36',C:'72',D:'108'},answer:'A'},
+  {id:'seq04',topic:'數列',difficulty:2,question:'數列 1,4,9,16,... 第6項係',options:{A:'36',B:'25',C:'49',D:'30'},answer:'A'},
+  // 百分率 (1 existing + 4 new)
+  {id:'pct01',topic:'百分率',difficulty:1,question:'$25\%$ 等於',options:{A:'$\frac{1}{4}$',B:'$\frac{1}{3}$',C:'$\frac{1}{2}$',D:'$\frac{2}{5}$'},answer:'A'},
+  {id:'pct02',topic:'百分率',difficulty:2,question:'$80$ 既 $20\%$ 係幾多？',options:{A:'16',B:'20',C:'12',D:'8'},answer:'A'},
+  {id:'pct03',topic:'百分率',difficulty:2,question:'若 $150$ 係 $x\%$ 的 $75$，求 $x$',options:{A:'50',B:'40',C:'60',D:'75'},answer:'A'},
+  {id:'pct04',topic:'百分率',difficulty:2,question:'$200$ 既 $15\%$ 係',options:{A:'30',B:'20',C:'15',D:'25'},answer:'A'},
+  // 近似值 (1 existing + 4 new)
+  {id:'approx01',topic:'近似值',difficulty:1,question:'將 $3.14159$ 近似至小數點後兩位',options:{A:'3.14',B:'3.15',C:'3.16',D:'3.14'},answer:'A'},
+  {id:'approx02',topic:'近似值',difficulty:2,question:'將 $4.567$ 近似至小數點後一位',options:{A:'4.6',B:'4.5',C:'4.7',D:'4.57'},answer:'A'},
+  {id:'approx03',topic:'近似值',difficulty:2,question:'$12.347$ 四捨五入至小數點後一位',options:{A:'12.3',B:'12.4',C:'12.35',D:'12.0'},answer:'A'},
+  {id:'approx04',topic:'近似值',difficulty:2,question:'將 $0.999$ 近似至小數點後兩位',options:{A:'1.00',B:'0.99',C:'1.0',D:'0.90'},answer:'A'},
+];
+
+// Merge Phase 2 questions
+ALL_QUESTIONS.push(...QUESTIONS_PHASE2);
+console.log(`Total questions after Phase 2: ${ALL_QUESTIONS.length}`);
+
+
 // ============================================================
 // CARD SYSTEM (Phase 1c)
 // ============================================================
@@ -447,17 +526,83 @@ const CARDS = [
 ];
 
 // ============================================================
+// ACHIEVEMENT SYSTEM (Phase 2)
+// ============================================================
+const ACHIEVEMENTS=[
+  {id:'first_correct',name:'答對一道',desc:'首次答對題目',icon:'✅',reward:20,cond:(gs)=>gs.correctAnswers>=1},
+  {id:'correct_10',name:'答題新秀',desc:'答對10道題目',icon:'📖',reward:50,cond:(gs)=>gs.correctAnswers>=10},
+  {id:'correct_50',name:'答題高手',desc:'答對50道題目',icon:'📚',reward:100,cond:(gs)=>gs.correctAnswers>=50},
+  {id:'correct_100',name:'答題大師',desc:'答對100道題目',icon:'🏆',reward:200,cond:(gs)=>gs.correctAnswers>=100},
+  {id:'streak_3',name:'連勝初哥',desc:'達成3連勝',icon:'🔥',reward:30,cond:(gs)=>gs.maxStreak>=3},
+  {id:'streak_5',name:'連勝達人',desc:'達成5連勝',icon:'🔥',reward:50,cond:(gs)=>gs.maxStreak>=5},
+  {id:'streak_10',name:'連勝大師',desc:'達成10連勝',icon:'🔥',reward:100,cond:(gs)=>gs.maxStreak>=10},
+  {id:'level_5',name:'小試牛刀',desc:'達到5級',icon:'⬆️',reward:50,cond:(gs)=>gs.level>=5},
+  {id:'level_10',name:'升級達人',desc:'達到10級',icon:'⬆️',reward:100,cond:(gs)=>gs.level>=10},
+  {id:'level_20',name:'數學大師',desc:'達到20級',icon:'👑',reward:300,cond:(gs)=>gs.level>=20},
+  {id:'first_card',name:'收集第一張',desc:'獲得第一張卡牌',icon:'🃏',reward:30,cond:(gs)=>(gs.cards||[]).length>=1},
+  {id:'cards_5',name:'卡牌收藏家',desc:'收集5張卡牌',icon:'🃏',reward:50,cond:(gs)=>(gs.cards||[]).length>=5},
+  {id:'cards_20',name:'卡牌達人',desc:'收集20張卡牌',icon:'🃏',reward:100,cond:(gs)=>(gs.cards||[]).length>=20},
+  {id:'visit_3',name:'探索者',desc:'進入3個不同教室',icon:'🗺️',reward:30,cond:(gs)=>(gs.roomsVisited||[]).length>=3},
+  {id:'visit_6',name:'房間探險家',desc:'進入6個不同教室',icon:'🗺️',reward:60,cond:(gs)=>(gs.roomsVisited||[]).length>=6},
+  {id:'visit_all',name:'全科探索',desc:'進入所有教室',icon:'🗺️',reward:200,cond:(gs)=>(gs.roomsVisited||[]).length>=12},
+  {id:'first_daily',name:'任務達人',desc:'完成第一個每日任務',icon:'📋',reward:30,cond:(gs)=>gs.completedDailyTasks>=1},
+  {id:'hp_full',name:'精力充沛',desc:'HP回滿',icon:'❤',reward:10,cond:(gs)=>gs.hp>=gs.maxHp},
+  {id:'first_room',name:'初次探索',desc:'進入第一個教室',icon:'🚪',reward:20,cond:(gs)=>(gs.roomsVisited||[]).length>=1},
+  {id:'legendary_card',name:'傳說獵人',desc:'獲得第一張傳說卡',icon:'⭐',reward:100,cond:(gs)=>(gs.cards||[]).some(id=>id&&id.startsWith('l'))},
+];
+
+function hasAchievement(id){return Array.isArray(gameState.unlockedAchievements)&&gameState.unlockedAchievements.includes(id)}
+
+function checkAchievements(){
+  if(!Array.isArray(gameState.unlockedAchievements))gameState.unlockedAchievements=[];
+  ACHIEVEMENTS.forEach(a=>{
+    if(!hasAchievement(a.id)){
+      try{if(a.cond(gameState)){
+        gameState.unlockedAchievements.push(a.id);
+        showAchievementToast(a);
+        addXP(a.reward);
+        saveState();
+      }}catch(e){}
+    }
+  });
+}
+
+function showAchievementToast(a){
+  const toast=document.getElementById('achievement-toast');
+  if(!toast)return;
+  toast.innerHTML='<span class="ach-icon">'+a.icon+'</span><div><div class="ach-name">🏆 '+a.name+'</div><div class="ach-desc">'+a.desc+' +'+a.reward+'XP</div></div>';
+  toast.classList.add('show');
+  sfxAchievement&&sfxAchievement();
+  setTimeout(()=>toast.classList.remove('show'),4000);
+}
+
+function sfxAchievement(){try{playTone(523,.1,'sine',.2);setTimeout(()=>playTone(659,.1,'sine',.2),120);setTimeout(()=>playTone(784,.1,'sine',.2),240);setTimeout(()=>playTone(1047,.3,'sine',.25),360);}catch(e){}}
+
+function checkRoomVisit(roomId){
+  if(!Array.isArray(gameState.roomsVisited))gameState.roomsVisited=[];
+  if(!gameState.roomsVisited.includes(roomId)){
+    gameState.roomsVisited.push(roomId);
+    saveState();
+    checkAchievements();
+  }
+}
+
+
+// ============================================================
 // GAME STATE
 // ============================================================
 const TILE = 48;
-const MAP_COLS = 12;
-const MAP_ROWS = 9;
+const MAP_COLS = 16;
+const MAP_ROWS = 11;
 
 let gameState = {
   hp: 100, maxHp:100,xp:0,level:1,questionsAnswered:0,correctAnswers:0,streak:0,maxStreak:0,
   dailyCorrect:0,dailyTasks:{correct5:false,correct10:false,streak3:false},
   lastDailyReset:null,
   cards:[], // array of card ids owned
+  unlockedAchievements:[],
+  roomsVisited:[],
+  completedDailyTasks:0,
 };
 let dailyTasksState = {
   tasks:[
@@ -620,6 +765,11 @@ function updateHUD(){
   if(cEl)cEl.textContent=gameState.cards.length;
   const mcEl=document.getElementById('menu-card-count');
   if(mcEl)mcEl.textContent=gameState.cards.length;
+  const acEl=document.getElementById('menu-ach-count');
+  if(acEl){
+    const unlocked=Array.isArray(gameState.unlockedAchievements)?gameState.unlockedAchievements.length:0;
+    acEl.textContent=unlocked;
+  }
 }
 
 function updateStreakUI(){
@@ -638,7 +788,7 @@ function addXP(amt){
   const needed=100*gameState.level;
   if(gameState.xp>=needed){
     gameState.xp-=needed;gameState.level++;
-    sfxLevelUp();showLevelUp();
+    sfxLevelUp();showLevelUp();checkAchievements();
   }
   saveState();updateHUD();
   if(currentUser)syncToFirebase();
@@ -883,9 +1033,10 @@ function submitAnswer(key){
     if(gameState.streak>=3)sfxStreak();
     queueAnswer(currentQuiz.id,true,currentQuiz.difficulty);
     submitToGAS({questionId:currentQuiz.id,answer:key,isCorrect:true,difficulty:currentQuiz.difficulty});
+    checkAchievements();
     // Card drop
     const droppedCard = getCardDrop();
-    if(droppedCard) setTimeout(()=>revealCard(droppedCard),800);
+    if(droppedCard) setTimeout(()=>{revealCard(droppedCard);checkAchievements();},800);
   } else {
     sfxWrong();
     gameState.streak=0;
@@ -1003,6 +1154,27 @@ function showCardCollection(){
   overlay.classList.add('active');
 }
 
+// ============================================================
+// ACHIEVEMENTS PANEL
+// ============================================================
+function showAchievements(){
+  const overlay = document.getElementById('achievement-overlay');
+  const grid = document.getElementById('achievement-grid');
+  const countEl = document.getElementById('achievement-count');
+  const menuCount = document.getElementById('menu-ach-count');
+  const unlocked = Array.isArray(gameState.unlockedAchievements) ? gameState.unlockedAchievements.length : 0;
+  countEl.textContent = unlocked;
+  if(menuCount) menuCount.textContent = unlocked;
+  grid.innerHTML='';
+  ACHIEVEMENTS.forEach(a=>{
+    const cell = document.createElement('div');
+    cell.className='ach-cell'+(hasAchievement(a.id)?' unlocked':'');
+    cell.innerHTML='<span class="ach-icon">'+a.icon+'</span><div class="ach-info"><div class="ach-name">'+a.name+'</div><div class="ach-desc">'+a.desc+'</div><div class="ach-reward">+'+a.reward+'XP</div></div>';
+    grid.appendChild(cell);
+  });
+  overlay.classList.add('active');
+}
+
 function showCardDetail(card){
   const detail = document.getElementById('card-detail-overlay');
   const cardEl = document.getElementById('card-detail-card');
@@ -1028,9 +1200,33 @@ function sfxLegendary(){try{playTone(440,.1,'sine',.2);setTimeout(()=>playTone(5
 // ============================================================
 const COLORS={floor:'#2d2d4a',wall:'#4a4a6a',entrance:'#3d5a3d',classroom:'#4A90D9',door:'#8B6914'};
 const ROOMS=[
-  {id:'alg',name:'代數房',topic:'代數',tileX:2,tileY:2,w:3,h:2,color:'#4A90D9'},
-  {id:'geo',name:'幾何房',topic:'幾何',tileX:7,tileY:2,w:3,h:2,color:'#52C41A'},
-  {id:'stat',name:'統計房',topic:'統計',tileX:4,tileY:5,w:4,h:2,color:'#FAAD14'},
+  // 1st floor - 左翼
+  {id:'alg',name:'代數房',topic:'代數',tileX:1,tileY:2,w:3,h:2,color:'#4A90D9'},
+  {id:'geo',name:'幾何房',topic:'幾何',tileX:5,tileY:2,w:3,h:2,color:'#52C41A'},
+  // 1st floor - 右翼
+  {id:'stat',name:'統計房',topic:'統計',tileX:9,tileY:2,w:3,h:2,color:'#FAAD14'},
+  {id:'prob',name:'概率房',topic:'概率',tileX:13,tileY:2,w:3,h:2,color:'#722ED1'},
+  // 2nd floor - 左翼
+  {id:'func',name:'函數房',topic:'函數',tileX:1,tileY:5,w:3,h:2,color:'#EB7196'},
+  {id:'eq',name:'方程房',topic:'方程',tileX:5,tileY:5,w:3,h:2,color:'#36CFC9'},
+  // 2nd floor - 右翼
+  {id:'area',name:'面積房',topic:'面積',tileX:9,tileY:5,w:3,h:2,color:'#FA8C16'},
+  {id:'coord',name:'坐標房',topic:'坐標',tileX:13,tileY:5,w:3,h:2,color:'#F5222D'},
+  // Ground floor
+  {id:'ratio',name:'比率房',topic:'比率',tileX:1,tileY:8,w:3,h:2,color:'#13C2C2'},
+  {id:'seq',name:'數列房',topic:'數列',tileX:5,tileY:8,w:3,h:2,color:'#AD8B00'},
+  {id:'pct',name:'百分法房',topic:'百分率',tileX:9,tileY:8,w:3,h:2,color:'#8B5CF6'},
+  {id:'approx',name:'近似房',topic:'近似值',tileX:13,tileY:8,w:3,h:2,color:'#64748B'},
+];
+
+const NPC_LABELS=[
+  {x:3,y:1,text:'📐 幾何長老'},
+  {x:10,y:1,text:'📊 統計賢者'},
+  {x:14,y:1,text:'🎲 概率大師'},
+  {x:3,y:4,text:'📈 函數導師'},
+  {x:14,y:4,text:'📍 坐標導師'},
+  {x:2,y:7,text:'⚖️ 比率達人'},
+  {x:10,y:7,text:'📉 百分法師'},
 ];
 
 class MainScene extends Phaser.Scene{
@@ -1041,7 +1237,7 @@ class MainScene extends Phaser.Scene{
   create(){
     this.physics.world.setBounds(0,0,MAP_COLS*TILE,MAP_ROWS*TILE);
     this.drawMap();
-    this.player=this.physics.add.sprite(5*TILE+24,7*TILE+24,'player');
+    this.player=this.physics.add.sprite(8*TILE+24,10*TILE+24,'player');
     this.player.setCollideWorldBounds(true);
     this.cursors=this.input.keyboard.createCursorKeys();
     this.wasd=this.input.keyboard.addKeys('W,A,S,D');
@@ -1077,7 +1273,7 @@ class MainScene extends Phaser.Scene{
     for(let y=0;y<MAP_ROWS;y++)for(let x=0;x<MAP_COLS;x++){
       const t=this.getTile(x,y);
       if(t==='wall'){const w=this.add.sprite(x*TILE+24,y*TILE+24,'wall');floor.add(w);}
-      else{const f=this.add.sprite(x*TILE+24,y*TILE+24,t==='entrance'?'entrance':'floor');floor.add(f);}
+      else{const f=this.add.sprite(x*TILE+24,y*TILE+24,'floor');floor.add(f);}
     }
     ROOMS.forEach(r=>{
       for(let dy=0;dy<r.h;dy++)for(let dx=0;dx<r.w;dx++){
@@ -1086,16 +1282,27 @@ class MainScene extends Phaser.Scene{
         cl.setTint(parseInt(r.color.replace('#',''),16));
         floor.add(cl);
       }
-      const sign=this.add.text((r.tileX+r.w/2)*TILE,(r.tileY-0.5)*TILE,r.name,{fontSize:'11px',color:'#fff',backgroundColor:'rgba(0,0,0,0.6)',padding:{x:4,y:2}});
+      const sign=this.add.text((r.tileX+r.w/2)*TILE,(r.tileY-0.5)*TILE,r.name,{fontSize:'10px',color:'#fff',backgroundColor:'rgba(0,0,0,0.7)',padding:{x:4,y:2}});
       sign.setOrigin(.5);
     });
+    // NPC labels
+    if(typeof NPC_LABELS!=='undefined'){
+      NPC_LABELS.forEach(n=>{
+        const label=this.add.text(n.x*TILE,(n.y-0.5)*TILE,n.text,{fontSize:'9px',color:'#fff',backgroundColor:'rgba(0,0,0,0.8)',padding:{x:3,y:2}});
+        label.setOrigin(.5);
+      });
+    }
   }
 
-  getTile(x,y){
+    getTile(x,y){
     if(x<1||x>=MAP_COLS-1||y<1||y>=MAP_ROWS-1)return'wall';
-    if(y===7&&x>=4&&x<=6)return'entrance';
+    // hallways: horizontal corridors
+    if(y===1||y===4||y===7||y===10)return'floor';
+    // hallways: vertical corridors
+    if(x===1||x===8)return'floor';
+    // room tiles
     for(const r of ROOMS)if(x>=r.tileX&&x<r.tileX+r.w&&y>=r.tileY&&y<r.tileY+r.h)return'classroom';
-    return'floor';
+    return'wall';
   }
 
   setupJoystick(){
@@ -1161,7 +1368,7 @@ class MainScene extends Phaser.Scene{
     if(!document.getElementById('quiz-overlay').style.display||document.getElementById('quiz-overlay').style.display==='none'){
       for(const r of ROOMS){
         if(px>=r.tileX&&px<r.tileX+r.w&&py>=r.tileY&&py<r.tileY+r.h){
-          if(this.lastRoom!==r.id){this.lastRoom=r.id;startQuiz(r.topic,r.name);}
+          if(this.lastRoom!==r.id){this.lastRoom=r.id;checkRoomVisit(r.id);startQuiz(r.topic,r.name);}
           return;
         }
       }
