@@ -71,54 +71,10 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 .level-up-sub{font-size:20px;color:#fff;margin-top:10px}
 
-/* ===== CARD SYSTEM ===== */
-#card-overlay{display:none;position:fixed;inset:0;z-index:250;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;overflow-y:auto}
-#card-overlay.active{display:flex}
-#card-collection-header{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:500px;margin-bottom:16px}
-#card-collection-title{color:#fff;font-size:20px;font-weight:700}
-#card-close-btn{background:#4A90D9;border:none;color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer}
-#card-stats-bar{display:flex;gap:16px;margin-bottom:12px;font-size:13px;color:#aaa}
-#card-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:100%;max-width:500px;max-height:calc(100vh - 160px);overflow-y:auto}
-.card-cell{aspect-ratio:3/4;background:#16213e;border-radius:8px;border:2px solid #2d4a6a;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s,border-color .15s;position:relative;overflow:hidden}
-.card-cell:hover{transform:scale(1.05)}
-.card-cell.owned{border-color:#4A90D9}
-.card-cell.locked{filter:grayscale(1);opacity:.4}
-.card-cell.common-glow{box-shadow:0 0 8px rgba(255,255,255,.3)}
-.card-cell.rare-glow{box-shadow:0 0 12px rgba(24,144,255,.6)}
-.card-cell.legendary-glow{box-shadow:0 0 20px rgba(250,173,20,.8);animation:glow-pulse 1.5s infinite}
-@keyframes glow-pulse{0%,100%{box-shadow:0 0 20px rgba(250,173,20,.8)}50%{box-shadow:0 0 35px rgba(250,173,20,1)}}
-.card-cell .card-icon{font-size:22px}
-.card-cell .card-name{font-size:8px;color:#fff;text-align:center;padding:2px;line-height:1.2}
-.card-cell .card-rarity{position:absolute;top:2px;right:3px;font-size:8px;font-weight:700}
-.card-rarity.common{color:#aaa}.card-rarity.rare{color:#1890FF}.card-rarity.legendary{color:#FAAD14}
-#card-detail-overlay{display:none;position:fixed;inset:0;z-index:260;background:rgba(26,26,46,.95);flex-direction:column;align-items:center;justify-content:center}
-#card-detail-overlay.active{display:flex}
-#card-detail-card{width:200px;aspect-ratio:3/4;background:#16213e;border-radius:16px;border:4px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;position:relative}
-#card-detail-card.common{border-color:#aaa}#card-detail-card.rare{border-color:#1890FF}#card-detail-card.legendary{border-color:#FAAD14}
-#card-detail-icon{font-size:56px;text-align:center}
-#card-detail-name{color:#fff;font-size:15px;font-weight:700;margin-top:10px;text-align:center}
-#card-detail-effect{color:#aaa;font-size:12px;margin-top:8px;text-align:center}
-#card-detail-type{position:absolute;top:8px;right:10px;font-size:9px;color:#888}
-#card-detail-close{background:#4A90D9;border:none;color:#fff;padding:10px 24px;border-radius:8px;cursor:pointer;margin-top:20px}
-#card-drop-overlay{display:none;position:fixed;inset:0;z-index:270;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:center}
-#card-drop-overlay.active{display:flex}
-#card-drop-anim{width:160px;aspect-ratio:3/4;background:#16213e;border-radius:16px;border:4px solid #aaa;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;transition:transform .8s;border-color .3s}
-#card-drop-anim.flipping{transform:rotateY(180deg)}
-#card-drop-anim.common{border-color:#aaa}
-#card-drop-anim.rare{border-color:#1890FF}
-#card-drop-anim.legendary{border-color:#FAAD14;animation:glow-legendary 0.8s infinite}
-@keyframes glow-legendary{0%,100%{box-shadow:0 0 40px rgba(250,173,20,.8)}50%{box-shadow:0 0 80px rgba(250,173,20,1)}}
-#card-drop-icon{font-size:52px}
-#card-drop-name{color:#fff;font-size:14px;font-weight:700;margin-top:8px;text-align:center}
-#card-drop-effect{color:#aaa;font-size:11px;margin-top:4px;text-align:center}
-#card-drop-rarity{position:absolute;top:6px;right:8px;font-size:9px;font-weight:700}
-#card-drop-new{color:#FAAD14;font-size:14px;font-weight:700;margin-top:16px;animation:pulse 1s infinite}
-#card-drop-tap{color:#888;font-size:12px;margin-top:8px}
-
 /* ===== JOYSTICK ===== */
-#joystick-zone{display:none;position:fixed;bottom:20px;left:20px;width:140px;height:140px;z-index:150;pointer-events:all}
-#joystick-base{width:100%;height:100%;background:rgba(74,144,217,.15);border-radius:50%;border:3px solid rgba(74,144,217,.4);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-#joystick-knob{width:56px;height:56px;background:rgba(74,144,217,.7);border-radius:50%;opacity:.9;transition:transform .08s;box-shadow:0 0 12px rgba(74,144,217,.5)}
+#joystick-zone{display:none;position:fixed;bottom:30px;left:30px;width:120px;height:120px;z-index:150;pointer-events:all}
+#joystick-base{width:100%;height:100%;background:rgba(255,255,255,.1);border-radius:50%;border:3px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center}
+#joystick-knob{width:50px;height:50px;background:#4A90D9;border-radius:50%;opacity:.8;transition:transform .1s}
 
 /* ===== MENU OVERLAY ===== */
 #menu{display:none;position:fixed;inset:0;z-index:400;background:rgba(26,26,46,.96);flex-direction:column;align-items:center;justify-content:center;gap:14px}
@@ -174,7 +130,6 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
   <div class="hud-item"><span style="color:#F5222D">❤</span><div class="hud-bar"><div class="hud-fill" id="hp-bar" style="width:100%"></div></div><span id="hp-text">100</span></div>
   <div class="hud-item"><span style="color:#FAAD14">⭐</span><div class="hud-bar"><div class="hud-fill" id="xp-bar" style="width:0%"></div></div><span id="xp-text">0</span><span id="level-text" style="color:#FAAD14">Lv.1</span></div>
   <div id="streak-display" class="hud-item">🔥<span id="streak-num">0</span></div>
-  <div class="hud-item" style="cursor:pointer" onclick="showCardCollection()">🃏<span id="hud-card-count" style="font-size:12px">0</span></div>
 </div>
 
 <!-- Auth Area -->
@@ -213,39 +168,6 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 <!-- Level Up -->
 <div id="level-up"><div class="level-up-text">⬆️ 升級！</div><div class="level-up-sub" id="level-up-info">等級 2</div></div>
 
-<!-- CARD OVERLAYS -->
-<div id="card-overlay">
-  <div id="card-collection-header">
-    <div id="card-collection-title">🃏 卡牌收藏</div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <span id="card-stats-bar"><span id="card-owned-count">0</span>/50 已收集</span>
-      <button id="card-close-btn" onclick="closeCardOverlay()">關閉</button>
-    </div>
-  </div>
-  <div id="card-grid"></div>
-</div>
-
-<div id="card-detail-overlay">
-  <div id="card-detail-card">
-    <div id="card-detail-type">被動</div>
-    <div id="card-detail-icon">🃏</div>
-    <div id="card-detail-name"></div>
-    <div id="card-detail-effect"></div>
-  </div>
-  <button id="card-detail-close" onclick="closeCardDetail()">關閉</button>
-</div>
-
-<div id="card-drop-overlay">
-  <div id="card-drop-anim">
-    <div id="card-drop-rarity" class="card-rarity common">普通</div>
-    <div id="card-drop-icon">🃏</div>
-    <div id="card-drop-name"></div>
-    <div id="card-drop-effect"></div>
-  </div>
-  <div id="card-drop-new" style="display:none">✨ 新卡牌！</div>
-  <div id="card-drop-tap">點擊繼續</div>
-</div>
-
 <!-- Joystick -->
 <div id="joystick-zone"><div id="joystick-base"><div id="joystick-knob"></div></div></div>
 
@@ -255,7 +177,6 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
   <div class="menu-subtitle" id="menu-player-info"></div>
   <button class="menu-btn gold" onclick="showDailyTasks();closeMenu();">📋 每日任務</button>
   <button class="menu-btn" onclick="showLeaderboard();closeMenu();">🏆 排行榜</button>
-  <button class="menu-btn" onclick="showCardCollection();closeMenu();">🃏 卡牌收藏 (<span id="menu-card-count">0</span>)</button>
   <button class="menu-btn danger" onclick="resetGame()">重新開始</button>
   <button class="menu-btn" onclick="closeMenu()">繼續遊戲</button>
 </div>
@@ -383,67 +304,6 @@ const ALL_QUESTIONS = [...QUESTIONS_ORIGINAL, ...QUESTIONS_PHASE1B];
 console.log(`Total questions loaded: ${ALL_QUESTIONS.length}`);
 
 // ============================================================
-// CARD SYSTEM (Phase 1c)
-// ============================================================
-const CARDS = [
-  // 普通卡 (Common) - 60% drop rate
-  {id:'c01',name:'計算入門',icon:'🧮',type:'passive',rarity:'common',effect:'計算題經驗+5%',stat:'algebra_exp',value:5},
-  {id:'c02',name:'幾何初心',icon:'📐',type:'passive',rarity:'common',effect:'幾何題經驗+5%',stat:'geo_exp',value:5},
-  {id:'c03',name:'統計入門',icon:'📊',type:'passive',rarity:'common',effect:'統計題經驗+5%',stat:'stat_exp',value:5},
-  {id:'c04',name:'數字敏感',icon:'🔢',type:'passive',rarity:'common',effect:'心算正確率+3%',stat:'accuracy',value:3},
-  {id:'c05',name:'勤奮學生',icon:'📖',type:'passive',rarity:'common',effect:'每日答題上限+5',stat:'daily_limit',value:5},
-  {id:'c06',name:'專心聽講',icon:'👂',type:'passive',rarity:'common',effect:'課堂題經驗+5%',stat:'class_exp',value:5},
-  {id:'c07',name:'勇於挑戰',icon:'⚔️',type:'passive',rarity:'common',effect:'挑戰題經驗+5%',stat:'challenge_exp',value:5},
-  {id:'c08',name:'邏輯思考',icon:'🧩',type:'passive',rarity:'common',effect:'推理題經驗+5%',stat:'logic_exp',value:5},
-  {id:'c09',name:'空間想像',icon:'🧊',type:'passive',rarity:'common',effect:'立體幾何經驗+5%',stat:'3d_exp',value:5},
-  {id:'c10',name:'速度之星',icon:'⚡',type:'passive',rarity:'common',effect:'答題時間-1秒',stat:'speed',value:1},
-  {id:'c11',name:'耐心計算',icon:'🧮',type:'passive',rarity:'common',effect:'繁複計算正確率+5%',stat:'calc_accuracy',value:5},
-  {id:'c12',name:'審題高手',icon:'🔍',type:'passive',rarity:'common',effect:'首次答題正確率+5%',stat:'first_accuracy',value:5},
-  {id:'c13',name:'敢於創新',icon:'💡',type:'passive',rarity:'common',effect:'開放題額外獎勵',stat:'bonus_exp',value:5},
-  {id:'c14',name:'應用初探',icon:'🌍',type:'passive',rarity:'common',effect:'應用題經驗+5%',stat:'applied_exp',value:5},
-  {id:'c15',name:'代數起步',icon:'📝',type:'passive',rarity:'common',effect:'代數題經驗+5%',stat:'algebra_exp',value:5},
-  {id:'c16',name:'概率初哥',icon:'🎲',type:'passive',rarity:'common',effect:'概率題經驗+5%',stat:'prob_exp',value:5},
-  {id:'c17',name:'函數基礎',icon:'📈',type:'passive',rarity:'common',effect:'函數題經驗+5%',stat:'func_exp',value:5},
-  {id:'c18',name:'面積計算',icon:'⬜',type:'passive',rarity:'common',effect:'面積題經驗+5%',stat:'area_exp',value:5},
-  {id:'c19',name:'方程求解',icon:'🔑',type:'passive',rarity:'common',effect:'方程題經驗+5%',stat:'eq_exp',value:5},
-  {id:'c20',name:'圖表解讀',icon:'📉',type:'passive',rarity:'common',effect:'圖表題經驗+5%',stat:'chart_exp',value:5},
-
-  // 稀有卡 (Rare) - 30% drop rate
-  {id:'r01',name:'計算高手',icon:'🧮',type:'passive',rarity:'rare',effect:'計算題經驗+15%',stat:'algebra_exp',value:15},
-  {id:'r02',name:'幾何愛好者',icon:'📐',type:'passive',rarity:'rare',effect:'幾何題經驗+15%',stat:'geo_exp',value:15},
-  {id:'r03',name:'統計分析師',icon:'📊',type:'passive',rarity:'rare',effect:'統計題經驗+15%',stat:'stat_exp',value:15},
-  {id:'r04',name:'雙倍專注',icon:'🎯',type:'skill',rarity:'rare',effect:'每日首次2x經驗(1次)',stat:'double_exp',value:1},
-  {id:'r05',name:'連勝之心',icon:'🔥',type:'passive',rarity:'rare',effect:'連勝加成+10%',stat:'streak_bonus',value:10},
-  {id:'r06',name:'暴擊大師',icon:'💥',type:'passive',rarity:'rare',effect:'暴擊率+5%',stat:'crit_rate',value:5},
-  {id:'r07',name:'幸運加成',icon:'🍀',type:'passive',rarity:'rare',effect:'卡牌掉落率+10%',stat:'card_drop',value:10},
-  {id:'r08',name:'組隊之心',icon:'🤝',type:'passive',rarity:'rare',effect:'組隊經驗+10%',stat:'team_exp',value:10},
-  {id:'r09',name:'速度專家',icon:'⚡',type:'passive',rarity:'rare',effect:'答題時間-3秒',stat:'speed',value:3},
-  {id:'r10',name:'精確無誤',icon:'✅',type:'passive',rarity:'rare',effect:'計算題正確率+10%',stat:'calc_accuracy',value:10},
-  {id:'r11',name:'立體幾何師',icon:'🧊',type:'passive',rarity:'rare',effect:'立體幾何+15%',stat:'3d_exp',value:15},
-  {id:'r12',name:'概率專家',icon:'🎲',type:'passive',rarity:'rare',effect:'概率題+15%',stat:'prob_exp',value:15},
-  {id:'r13',name:'應用大師',icon:'🌍',type:'passive',rarity:'rare',effect:'應用題+15%',stat:'applied_exp',value:15},
-  {id:'r14',name:'解題高手',icon:'🧩',type:'passive',rarity:'rare',effect:'疑難題+10%',stat:'hard_exp',value:10},
-  {id:'r15',name:'學習加速',icon:'🚀',type:'passive',rarity:'rare',effect:'升級經驗-5%',stat:'exp_reduce',value:5},
-  {id:'r16',name:'傳承之書',icon:'📚',type:'passive',rarity:'rare',effect:'老師指導加成+20%',stat:'teacher_boost',value:20},
-  {id:'r17',name:'早起鳥',icon:'🐦',type:'passive',rarity:'rare',effect:'早上答題經驗+10%',stat:'morning_exp',value:10},
-  {id:'r18',name:'夜貓子',icon:'🦉',type:'passive',rarity:'rare',effect:'晚上答題經驗+10%',stat:'night_exp',value:10},
-  {id:'r19',name:'週末戰士',icon:'⚔️',type:'passive',rarity:'rare',effect:'週末經驗+15%',stat:'weekend_exp',value:15},
-  {id:'r20',name:'數學精算師',icon:'🔢',type:'passive',rarity:'rare',effect:'所有計算+12%',stat:'all_calc',value:12},
-
-  // 傳說卡 (Legendary) - 10% drop rate
-  {id:'l01',name:'數學大師',icon:'👑',type:'passive',rarity:'legendary',effect:'全科目經驗+30%',stat:'all_exp',value:30},
-  {id:'l02',name:'全能學者',icon:'🎓',type:'passive',rarity:'legendary',effect:'所有題型經驗+20%',stat:'all_type_exp',value:20},
-  {id:'l03',name:'永不放棄',icon:'💪',type:'passive',rarity:'legendary',effect:'答錯不扣HP(每日3次)',stat:'no_hp_loss',value:3},
-  {id:'l04',name:'透視之眼',icon:'👁️',type:'skill',rarity:'legendary',effect:'答題前顯示提示',stat:'show_hint',value:1},
-  {id:'l05',name:'時間管理者',icon:'⏰',type:'passive',rarity:'legendary',effect:'限時挑戰時間+30秒',stat:'time_bonus',value:30},
-  {id:'l06',name:'成就獵人',icon:'🏅',type:'passive',rarity:'legendary',effect:'成就點數+50%',stat:'achieve_pts',value:50},
-  {id:'l07',name:'全勤獎',icon:'🏆',type:'passive',rarity:'legendary',effect:'連續登入獎勵+20%',stat:'login_bonus',value:20},
-  {id:'l08',name:'卡牌之王',icon:'🃏',type:'passive',rarity:'legendary',effect:'卡牌掉落率+20%',stat:'card_drop',value:20},
-  {id:'l09',name:'连胜传说',icon:'🔥',type:'passive',rarity:'legendary',effect:'連勝加成+25%',stat:'streak_bonus',value:25},
-  {id:'l10',name:'完美主義',icon:'💎',type:'passive',rarity:'legendary',effect:'全部屬性+10%',stat:'all_stats',value:10},
-];
-
-// ============================================================
 // GAME STATE
 // ============================================================
 const TILE = 48;
@@ -453,8 +313,7 @@ const MAP_ROWS = 9;
 let gameState = {
   hp: 100, maxHp:100,xp:0,level:1,questionsAnswered:0,correctAnswers:0,streak:0,maxStreak:0,
   dailyCorrect:0,dailyTasks:{correct5:false,correct10:false,streak3:false},
-  lastDailyReset:null,
-  cards:[], // array of card ids owned
+  lastDailyReset:null
 };
 let dailyTasksState = {
   tasks:[
@@ -610,10 +469,6 @@ function updateHUD(){
   document.getElementById('xp-text').textContent=gameState.xp;
   document.getElementById('level-text').textContent='Lv.'+gameState.level;
   document.getElementById('user-level')&&(document.getElementById('user-level').textContent='Lv.'+gameState.level);
-  const cEl=document.getElementById('hud-card-count');
-  if(cEl)cEl.textContent=gameState.cards.length;
-  const mcEl=document.getElementById('menu-card-count');
-  if(mcEl)mcEl.textContent=gameState.cards.length;
 }
 
 function updateStreakUI(){
@@ -652,31 +507,7 @@ function loseHP(amt){
 function showLevelUp(){
   document.getElementById('level-up').style.display='flex';
   document.getElementById('level-up-info').textContent='等級 '+gameState.level;
-  spawnFireworks();
   setTimeout(()=>{document.getElementById('level-up').style.display='none';},2500);
-}
-
-function spawnFireworks(){
-  const colors=['#FAAD14','#F5222D','#52C41A','#4A90D9','#722ED1','#FF6B35'];
-  const container=document.createElement('div');
-  container.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:299;overflow:hidden';
-  document.body.appendChild(container);
-  for(let i=0;i<40;i++){
-    const particle=document.createElement('div');
-    const color=colors[Math.floor(Math.random()*colors.length)];
-    const size=4+Math.random()*8;
-    const angle=Math.random()*Math.PI*2;
-    const velocity=100+Math.random()*200;
-    const dx=Math.cos(angle)*velocity;
-    const dy=Math.sin(angle)*velocity;
-    particle.style.cssText=`position:absolute;width:${size}px;height:${size}px;background:${color};border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%)`;
-    container.appendChild(particle);
-    particle.animate([{transform:'translate(-50%,-50%) scale(1)',opacity:1},{transform:`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0)`,opacity:0}],{
-      duration:800+Math.random()*400,
-      easing:'cubic-bezier(0,0.5,0.5,1)'
-    }).onfinish=()=>particle.remove();
-  }
-  setTimeout(()=>container.remove(),2000);
 }
 
 function checkDailyTasks(){
@@ -863,9 +694,6 @@ function submitAnswer(key){
     if(gameState.streak>=3)sfxStreak();
     queueAnswer(currentQuiz.id,true,currentQuiz.difficulty);
     submitToGAS({questionId:currentQuiz.id,answer:key,isCorrect:true,difficulty:currentQuiz.difficulty});
-    // Card drop
-    const droppedCard = getCardDrop();
-    if(droppedCard) setTimeout(()=>revealCard(droppedCard),800);
   } else {
     sfxWrong();
     gameState.streak=0;
@@ -887,119 +715,6 @@ function submitAnswer(key){
 function exitQuiz(){
   document.getElementById('quiz-overlay').style.display='none';
 }
-
-// ============================================================
-// CARD SYSTEM
-// ============================================================
-function hasCard(cardId){return gameState.cards.includes(cardId)}
-
-function addCard(cardId){
-  if(!hasCard(cardId)){
-    gameState.cards.push(cardId);
-    saveState();
-    return true;
-  }
-  return false;
-}
-
-function getCardDrop(){
-  if(Math.random() > 0.05) return null; // 5% chance
-  const roll = Math.random();
-  let rarity;
-  if(roll < 0.10) rarity='legendary';
-  else if(roll < 0.40) rarity='rare';
-  else rarity='common';
-  const pool = CARDS.filter(c=>c.rarity===rarity && !hasCard(c.id));
-  if(pool.length===0) return null;
-  return pool[Math.floor(Math.random()*pool.length)];
-}
-
-function revealCard(card){
-  if(!card) return;
-  const overlay = document.getElementById('card-drop-overlay');
-  const anim = document.getElementById('card-drop-anim');
-  const icon = document.getElementById('card-drop-icon');
-  const nameEl = document.getElementById('card-drop-name');
-  const effectEl = document.getElementById('card-drop-effect');
-  const rarityEl = document.getElementById('card-drop-rarity');
-  const newText = document.getElementById('card-drop-new');
-
-  const isNew = addCard(card.id);
-
-  // Reset
-  anim.className = '';
-  anim.className = card.rarity;
-  icon.textContent = card.icon;
-  nameEl.textContent = card.name;
-  effectEl.textContent = card.effect;
-  rarityEl.textContent = card.rarity==='legendary'?'傳說':card.rarity==='rare'?'稀有':'普通';
-  rarityEl.className = 'card-rarity ' + card.rarity;
-  newText.style.display = isNew ? 'block' : 'none';
-  if(!isNew) newText.style.display='none', document.getElementById('card-drop-tap').textContent='已有此卡';
-
-  overlay.classList.add('active');
-  anim.style.transform='rotateY(0deg)';
-
-  // Flip animation
-  setTimeout(()=>{anim.classList.add('flipping');},300);
-
-  // Sound
-  if(card.rarity==='legendary'){
-    sfxLegendary();
-  } else if(card.rarity==='rare'){
-    sfxRare();
-  } else {
-    sfxCardDrop();
-  }
-
-  overlay.onclick = null;
-  overlay.onclick = ()=>{overlay.classList.remove('active');overlay.onclick=null;updateHUD();};
-}
-
-function showCardCollection(){
-  const overlay = document.getElementById('card-overlay');
-  const grid = document.getElementById('card-grid');
-  const countEl = document.getElementById('card-owned-count');
-  const menuCount = document.getElementById('menu-card-count');
-  const owned = gameState.cards.length;
-  countEl.textContent = owned;
-  if(menuCount) menuCount.textContent = owned;
-  grid.innerHTML='';
-  CARDS.forEach(card=>{
-    const cell = document.createElement('div');
-    cell.className='card-cell';
-    if(hasCard(card.id)){
-      cell.classList.add('owned',card.rarity+'-glow');
-      cell.innerHTML='<span class="card-icon">'+card.icon+'</span><span class="card-name">'+card.name+'</span><span class="card-rarity '+card.rarity+'">'+(card.rarity==='legendary'?'★':card.rarity==='rare'?'◆':'')+'</span>';
-      cell.onclick=()=>showCardDetail(card);
-    } else {
-      cell.classList.add('locked');
-      cell.innerHTML='<span class="card-icon">❓</span><span class="card-name">???</span>';
-    }
-    grid.appendChild(cell);
-  });
-  overlay.classList.add('active');
-}
-
-function showCardDetail(card){
-  const detail = document.getElementById('card-detail-overlay');
-  const cardEl = document.getElementById('card-detail-card');
-  cardEl.className = card.rarity;
-  document.getElementById('card-detail-icon').textContent = card.icon;
-  document.getElementById('card-detail-name').textContent = card.name;
-  document.getElementById('card-detail-effect').textContent = card.effect;
-  document.getElementById('card-detail-type').textContent = card.type==='passive'?'被動':'技能';
-  detail.classList.add('active');
-  detail.onclick=null;
-  detail.onclick=()=>{detail.classList.remove('active');detail.onclick=null;};
-}
-
-function closeCardOverlay(){document.getElementById('card-overlay').classList.remove('active')}
-function closeCardDetail(){document.getElementById('card-detail-overlay').classList.remove('active')}
-
-function sfxCardDrop(){try{playTone(600,.1,'sine',.15);}catch(e){}}
-function sfxRare(){try{playTone(523,.1,'sine',.2);setTimeout(()=>playTone(784,.15,'sine',.2),100);setTimeout(()=>playTone(1047,.2,'sine',.2),200);}catch(e){}}
-function sfxLegendary(){try{playTone(440,.1,'sine',.2);setTimeout(()=>playTone(554,.1,'sine',.2),100);setTimeout(()=>playTone(659,.1,'sine',.2),200);setTimeout(()=>playTone(880,.3,'sine',.25),300);}catch(e){}}
 
 // ============================================================
 // PHASER GAME
@@ -1080,38 +795,21 @@ class MainScene extends Phaser.Scene{
     const zone=document.getElementById('joystick-zone');
     const knob=document.getElementById('joystick-knob');
     let drag=false,centerX=0,centerY=0;
-    const RADIUS=50;
     const handle=(e)=>{
       const t=e.touches?e.touches[0]:e;
-      const rect=zone.getBoundingClientRect();
-      const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
-      const dx=t.clientX-cx,dy=t.clientY-cy;
-      const dist=Math.min(RADIUS,Math.sqrt(dx*dx+dy*dy));
+      const dx=t.clientX-centerX,dy=t.clientY-centerY;
+      const dist=Math.min(40,Math.sqrt(dx*dx+dy*dy));
       const ang=Math.atan2(dy,dx);
-      this.joystick.x=Math.cos(ang)*dist/RADIUS;
-      this.joystick.y=Math.sin(ang)*dist/RADIUS;
+      this.joystick.x=Math.cos(ang)*dist/40;
+      this.joystick.y=Math.sin(ang)*dist/40;
       knob.style.transform=`translate(${Math.cos(ang)*dist}px,${Math.sin(ang)*dist}px)`;
     };
-    const start=(e)=>{
-      const t=e.touches?e.touches[0]:e;
-      const x=t.clientX,y=t.clientY;
-      if(x>window.innerWidth/2) return; // right half = not joystick
-      e.preventDefault();
-      drag=true;
-      const bx=Math.min(x,window.innerWidth*0.45);
-      const by=Math.max(y,100);
-      zone.style.display='flex';
-      zone.style.left=(bx-RADIUS-10)+'px';
-      zone.style.top=(by-RADIUS-10)+'px';
-      centerX=bx;centerY=by;
-      handle(e);
-    };
-    document.addEventListener('mousedown',e=>{if(e.target.closest('#joystick-zone')||e.clientX<window.innerWidth/2)start(e);});
-    document.addEventListener('mousemove',e=>{if(drag)handle(e);});
-    document.addEventListener('mouseup',()=>{if(drag){drag=false;this.joystick={x:0,y:0};knob.style.transform='translate(0,0)';}});
-    document.addEventListener('touchstart',e=>{start(e);},{passive:false});
-    document.addEventListener('touchmove',e=>{if(drag)handle(e);},{passive:false});
-    document.addEventListener('touchend',()=>{if(drag){drag=false;this.joystick={x:0,y:0};knob.style.transform='translate(0,0)';}});
+    zone.addEventListener('mousedown',e=>{drag=true;zone.style.display='flex';centerX=e.clientX;centerY=e.clientY;zone.style.left=(centerX-60)+'px';zone.style.top=(centerY-60)+'px';handle(e);});
+    window.addEventListener('mousemove',e=>{if(drag)handle(e);});
+    window.addEventListener('mouseup',()=>{drag=false;this.joystick={x:0,y:0};knob.style.transform='translate(0,0)';});
+    zone.addEventListener('touchstart',e=>{e.preventDefault();drag=true;const t=e.touches[0];centerX=t.clientX;centerY=t.clientY;zone.style.display='flex';zone.style.left=(centerX-60)+'px';zone.style.top=(centerY-60)+'px';},{passive:false});
+    zone.addEventListener('touchmove',e=>{e.preventDefault();if(drag)handle(e);},{passive:false});
+    zone.addEventListener('touchend',()=>{drag=false;this.joystick={x:0,y:0};knob.style.transform='translate(0,0)';});
   }
   
   handleTap(pointer){
@@ -1165,8 +863,6 @@ if(firebaseConfigured){
 
 // Load state and init game
 loadState();
-const menuCardCount=document.getElementById('menu-card-count');
-if(menuCardCount)menuCardCount.textContent=gameState.cards.length;
 const isMobile=/Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 if(isMobile)document.getElementById('joystick-zone').style.display='block';
 
