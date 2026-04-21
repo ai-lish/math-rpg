@@ -179,10 +179,16 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 .task-complete{text-decoration:line-through;opacity:.5}
 .tasks-close{margin-top:16px;background:#52C41A;border:none;color:#fff;padding:10px 32px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700}
 
-/* ===== FIREBASE STATUS ===== */
+@keyframes toast-anim{0%{transform:translateX(-50%) translateY(-20px);opacity:0}100%{transform:translateX(-50%) translateY(0);opacity:1}}
 #firebase-status{position:fixed;bottom:10px;right:10px;z-index:90;font-size:11px;padding:4px 8px;border-radius:4px;display:none}
 #firebase-status.offline{background:#F5222D;color:#fff}
 #firebase-status.online{background:#52C41A;color:#fff}
+
+/* ===== HUD DIFFICULTY & CREDITS ===== */
+#hud-difficulty{display:none;align-items:center;gap:2px;color:#FAAD14;font-size:11px;font-weight:700;opacity:.8}
+#hud-difficulty.active{display:flex}
+#hud-credits{display:none;align-items:center;gap:4px;color:#1890FF;font-size:12px;font-weight:600}
+#hud-credits.active{display:flex}
 </style>
 </head>
 <body>
@@ -192,6 +198,8 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 <div id="hud">
   <div class="hud-item"><span style="color:#F5222D">❤</span><div class="hud-bar"><div class="hud-fill" id="hp-bar" style="width:100%"></div></div><span id="hp-text">100</span></div>
   <div class="hud-item"><span style="color:#FAAD14">⭐</span><div class="hud-bar"><div class="hud-fill" id="xp-bar" style="width:0%"></div></div><span id="xp-text">0</span><span id="level-text" style="color:#FAAD14">Lv.1</span></div>
+  <div id="hud-difficulty"><span id="hud-diff-icon">⭐</span><span id="hud-diff-label">易</span></div>
+  <div id="hud-credits">💰<span id="credits-display">0</span></div>
   <div id="streak-display" class="hud-item">🔥<span id="streak-num">0</span></div>
   <div class="hud-item" style="cursor:pointer" onclick="showCardCollection()">🃏<span id="hud-card-count" style="font-size:12px">0</span></div>
 </div>
@@ -216,6 +224,7 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
       <div id="quiz-topic">代數房</div>
       <div id="quiz-meta">
         <span id="quiz-streak">🔥0連勝</span>
+        <span id="quiz-difficulty">⭐ 易</span>
         <span id="quiz-qnum">Q1</span>
       </div>
     </div>
@@ -287,6 +296,7 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
   <button class="menu-btn" onclick="showAchievements();closeMenu();">🏅 成就 (<span id="menu-ach-count">0</span>/60)</button>
   <button class="menu-btn gold" onclick="showArena();closeMenu();">⚔️ 競技場</button>
   <button class="menu-btn gold" onclick="showBossSelect();closeMenu();">💀 Boss戰</button>
+  <button class="menu-btn" onclick="showShop();closeMenu();">🏪 商店</button>
   <button class="menu-btn" onclick="showProfile();closeMenu();">👤 個人檔案</button>
   <button class="menu-btn" onclick="showTeacherDashboard();closeMenu();">👩‍🏫 教師面板</button>
   <button class="menu-btn danger" onclick="resetGame()">重新開始</button>
@@ -549,6 +559,71 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 
 <!-- Firebase Status -->
 <div id="firebase-status">離線</div>
+
+<!-- Tutorial Overlay -->
+<div id="tutorial-overlay" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(26,26,46,.98);flex-direction:column;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#16213e;border-radius:20px;padding:32px;max-width:420px;width:100%;border:3px solid #FAAD14;box-shadow:0 0 40px rgba(250,173,20,.3);text-align:center">
+    <div id="tutorial-icon" style="font-size:56px;margin-bottom:16px">🎮</div>
+    <div id="tutorial-step" style="color:#FAAD14;font-size:12px;font-weight:700;margin-bottom:8px">1/7</div>
+    <div id="tutorial-title" style="color:#fff;font-size:22px;font-weight:800;margin-bottom:12px">歡迎來到數學RPG！</div>
+    <div id="tutorial-text" style="color:#aaa;font-size:15px;line-height:1.6;margin-bottom:24px">在這個遊戲裡，你要探索學校，進入各個教室答題！</div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button onclick="skipTutorial()" style="background:transparent;border:2px solid #666;color:#666;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px">跳過</button>
+      <button onclick="nextTutorialStep()" style="background:#FAAD14;border:none;color:#1A1A2E;padding:10px 28px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700">下一步</button>
+    </div>
+  </div>
+</div>
+
+<!-- Daily Login Reward Overlay -->
+<div id="login-reward-overlay" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(26,26,46,.98);flex-direction:column;align-items:center;justify-content:center;padding:20px">
+  <div style="background:linear-gradient(135deg,#1a1a2e,#16213e,#1a1a2e);border-radius:24px;padding:36px;max-width:400px;width:100%;border:4px solid #FAAD14;box-shadow:0 0 60px rgba(250,173,20,.4);text-align:center">
+    <div style="font-size:64px;margin-bottom:16px">🎁</div>
+    <div id="login-reward-title" style="color:#FAAD14;font-size:26px;font-weight:900;margin-bottom:8px">第 1 天登入！</div>
+    <div style="color:#fff;font-size:14px;margin-bottom:20px">登入獎勵</div>
+    <div id="login-reward-items" style="background:rgba(0,0,0,.3);border-radius:12px;padding:16px;margin-bottom:20px;text-align:left"></div>
+    <button onclick="closeLoginReward()" style="background:#FAAD14;border:none;color:#1A1A2E;padding:12px 32px;border-radius:8px;cursor:pointer;font-size:15px;font-weight:700">收下獎勵</button>
+  </div>
+</div>
+
+<!-- Shop Overlay -->
+<div id="shop-overlay" style="display:none;position:fixed;inset:0;z-index:550;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;overflow-y:auto">
+  <div style="background:#16213e;border-radius:16px;padding:24px;max-width:440px;width:100%;border:2px solid #1890FF">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="color:#1890FF;font-size:22px;font-weight:800">🏪 商店</div>
+      <div style="color:#FAAD14;font-size:16px;font-weight:700">💰 <span id="shop-credits">0</span> 學分</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px" id="shop-items">
+      <div style="background:rgba(255,255,255,.05);border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;border:1px solid rgba(255,255,255,.1)">
+        <div style="font-size:32px">❤️</div>
+        <div style="flex:1">
+          <div style="color:#fff;font-size:15px;font-weight:700">HP 回覆</div>
+          <div style="color:#aaa;font-size:12px">恢復 50 HP</div>
+        </div>
+        <div style="color:#1890FF;font-size:14px;font-weight:700">10 學分</div>
+        <button onclick="buyShopItem('hp')" style="background:#1890FF;border:none;color:#fff;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600">購買</button>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;border:1px solid rgba(255,255,255,.1)">
+        <div style="font-size:32px">⚡</div>
+        <div style="flex:1">
+          <div style="color:#fff;font-size:15px;font-weight:700">XP 加速</div>
+          <div style="color:#aaa;font-size:12px">+50% XP，持續 5 分鐘</div>
+        </div>
+        <div style="color:#1890FF;font-size:14px;font-weight:700">20 學分</div>
+        <button onclick="buyShopItem('xpboost')" style="background:#1890FF;border:none;color:#fff;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600">購買</button>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;border:1px solid rgba(255,255,255,.1)">
+        <div style="font-size:32px">🃏</div>
+        <div style="flex:1">
+          <div style="color:#fff;font-size:15px;font-weight:700">卡包抽獎</div>
+          <div style="color:#aaa;font-size:12px">保證獲得一張卡牌</div>
+        </div>
+        <div style="color:#1890FF;font-size:14px;font-weight:700">30 學分</div>
+        <button onclick="buyShopItem('cardpack')" style="background:#1890FF;border:none;color:#fff;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600">購買</button>
+      </div>
+    </div>
+    <button onclick="closeShop()" style="margin-top:20px;width:100%;background:transparent;border:2px solid #4A90D9;color:#4A90D9;padding:10px;border-radius:8px;cursor:pointer;font-size:14px">關閉</button>
+  </div>
+</div>
 
 <script>
 // ============================================================
@@ -1047,6 +1122,17 @@ let gameState = {
   lastDailyChallenge:'', // date string
   dailyChallengeCompleted:false,
   dailyChallengeStreak:0,
+  // Phase 5 - Dynamic difficulty
+  currentDifficulty:1, // 1=easy, 2=medium, 3=hard
+  consecutiveCorrect:0,
+  consecutiveWrong:0,
+  // Phase 5 - Daily login reward
+  loginStreak:0,
+  lastLoginDate:'',
+  // Phase 5 - Credits
+  credits:0,
+  // Phase 5 - Tutorial
+  tutorialDone:false,
 };
 let dailyTasksState = {
   tasks:[
@@ -1086,6 +1172,11 @@ function syncToFirebase(){
     lastDailyChallenge:gameState.lastDailyChallenge||'',
     dailyChallengeCompleted:gameState.dailyChallengeCompleted||false,
     dailyChallengeStreak:gameState.dailyChallengeStreak||0,
+    // Phase 5
+    currentDifficulty:gameState.currentDifficulty||1,
+    credits:gameState.credits||0,
+    loginStreak:gameState.loginStreak||0,
+    tutorialDone:gameState.tutorialDone||false,
     lastPlayed:Date.now()
   };
   getPlayerRef(currentUser.uid).update(updates);
@@ -1107,13 +1198,15 @@ function loadFromFirebase(uid){
       // Numeric fields - take max to avoid losing progress
       ['level','xp','hp','maxHp','questionsAnswered','correctAnswers','wrongAnswers',
        'streak','maxStreak','dailyCorrect','dailyStreak','completedDailyTasks',
-       'arenaParticipated','arenaPerfect','bossesDefeated','bossPerfect','dailyChallengeStreak'].forEach(k=>{
+       'arenaParticipated','arenaPerfect','bossesDefeated','bossPerfect','dailyChallengeStreak',
+       'credits','loginStreak','currentDifficulty'].forEach(k=>{
         if(d[k]!==undefined)gameState[k]=Math.max(gameState[k]||0,d[k]);
       });
       if(d.friendCode)gameState.friendCode=d.friendCode;
       if(d.lastDailyChallenge)gameState.lastDailyChallenge=d.lastDailyChallenge;
       if(d.dailyChallengeCompleted!==undefined)gameState.dailyChallengeCompleted=d.dailyChallengeCompleted;
       if(d.bossDefeatedSet&&Array.isArray(d.bossDefeatedSet))gameState.bossDefeatedSet=d.bossDefeatedSet;
+      if(d.tutorialDone!==undefined)gameState.tutorialDone=d.tutorialDone;
       saveState();
       updateHUD();
       console.log('Loaded from Firebase: Lv'+gameState.level+', '+gameState.cards.length+' cards');
@@ -1259,6 +1352,26 @@ function updateHUD(){
   if(acEl){
     const unlocked=Array.isArray(gameState.unlockedAchievements)?gameState.unlockedAchievements.length:0;
     acEl.textContent=unlocked;
+  }
+  // Credits display
+  const credEl=document.getElementById('credits-display');
+  if(credEl)credEl.textContent=gameState.credits||0;
+  const hudCredEl=document.getElementById('hud-credits');
+  if(hudCredEl){
+    if((gameState.credits||0)>0)hudCredEl.classList.add('active');
+    else hudCredEl.classList.remove('active');
+  }
+  // Difficulty indicator
+  const diffEl=document.getElementById('hud-difficulty');
+  const diffIcon=document.getElementById('hud-diff-icon');
+  const diffLabel=document.getElementById('hud-diff-label');
+  if(diffEl&&diffIcon&&diffLabel){
+    const diff=gameState.currentDifficulty||1;
+    const icons={1:'⭐',2:'⭐⭐',3:'⭐⭐⭐'};
+    const labels={1:'易',2:'中',3:'難'};
+    diffIcon.textContent=icons[diff]||'⭐';
+    diffLabel.textContent=labels[diff]||'易';
+    diffEl.classList.add('active');
   }
 }
 
@@ -1433,6 +1546,14 @@ function sfxLevelUp(){playTone(440,.1,'sine',.2);setTimeout(()=>playTone(554,.1,
 function sfxStep(){playTone(300,.05,'triangle',.05)}
 function sfxStreak(){playTone(880,.1,'sine',.2);setTimeout(()=>playTone(1100,.15,'sine',.2),80);}
 
+function showToast(msg,color='#fff'){
+  const t=document.createElement('div');
+  t.textContent=msg;
+  t.style.cssText='position:fixed;top:80px;left:50%;transform:translateX(-50%);background:'+color+';color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:toast-anim .4s ease-out';
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(()=>t.remove(),400);},2000);
+}
+
 // ============================================================
 // MATH RENDERING
 // ============================================================
@@ -1484,9 +1605,12 @@ function startQuiz(topic,name){
     return; // Special rooms - handled via menu
   }
   window._quizStartTime=Date.now();
-  // Get questions for this topic from ALL questions
-  const filtered=ALL_QUESTIONS.filter(q=>q.topic===topic);
-  const q=filtered[Math.floor(Math.random()*filtered.length)]||ALL_QUESTIONS[Math.floor(Math.random()*ALL_QUESTIONS.length)];
+  // Get questions for this topic - prefer current difficulty, fall back
+  const diff=gameState.currentDifficulty||1;
+  let filtered=ALL_QUESTIONS.filter(q=>q.topic===topic&&q.difficulty===diff);
+  if(filtered.length===0)filtered=ALL_QUESTIONS.filter(q=>q.topic===topic);
+  if(filtered.length===0)filtered=ALL_QUESTIONS;
+  const q=filtered[Math.floor(Math.random()*filtered.length)];
   currentQuiz=q;
   quizQuestionCount++;
 
@@ -1494,6 +1618,9 @@ function startQuiz(topic,name){
   document.getElementById('quiz-topic').textContent=(name||topic)+' 挑戰';
   document.getElementById('quiz-streak').textContent='🔥'+gameState.streak+'連勝';
   document.getElementById('quiz-qnum').textContent='Q'+quizQuestionCount;
+  // Update difficulty indicator
+  const diffLabels={1:'⭐ 易',2:'⭐⭐ 中',3:'⭐⭐⭐ 難'};
+  document.getElementById('quiz-difficulty').textContent=diffLabels[diff]||'⭐ 易';
 
   const qEl=document.getElementById('quiz-question');
   qEl.innerHTML='';
@@ -1547,6 +1674,16 @@ function submitAnswer(key){
     addXP(xpGain+streakBonus);
     gameState.correctAnswers++;
     gameState.dailyCorrect++;
+    // Credits earned
+    gameState.credits=(gameState.credits||0)+1;
+    // Dynamic difficulty: track consecutive correct
+    gameState.consecutiveCorrect=(gameState.consecutiveCorrect||0)+1;
+    gameState.consecutiveWrong=0;
+    if(gameState.consecutiveCorrect>=3&&(gameState.currentDifficulty||1)<3){
+      gameState.currentDifficulty=(gameState.currentDifficulty||1)+1;
+      gameState.consecutiveCorrect=0;
+      showToast('📈 難度提升至 '+(gameState.currentDifficulty===2?'⭐⭐ 中':'⭐⭐⭐ 難')+'！','#FAAD14');
+    }
     const bonusText=streakBonus>0?` +${streakBonus}連勝`:'';
     document.getElementById('quiz-feedback').textContent=`✓ 正確! +${xpGain}${bonusText} XP`;
     document.getElementById('quiz-feedback').className='correct';
@@ -1561,6 +1698,14 @@ function submitAnswer(key){
     sfxWrong();
     gameState.streak=0;
     loseHP(20);
+    // Dynamic difficulty: track consecutive wrong
+    gameState.consecutiveWrong=(gameState.consecutiveWrong||0)+1;
+    gameState.consecutiveCorrect=0;
+    if(gameState.consecutiveWrong>=2&&(gameState.currentDifficulty||1)>1){
+      gameState.currentDifficulty=(gameState.currentDifficulty||1)-1;
+      gameState.consecutiveWrong=0;
+      showToast('📉 難度降低至 '+(gameState.currentDifficulty===1?'⭐ 易':'⭐⭐ 中')+'！','#52C41A');
+    }
     document.getElementById('quiz-feedback').textContent='✗ 錯誤! -20 HP';
     document.getElementById('quiz-feedback').className='wrong';
     queueAnswer(currentQuiz.id,false,currentQuiz.difficulty);
@@ -2648,6 +2793,7 @@ if(firebaseConfigured){
 
 // Load state and init game
 loadState();
+initPhase5();
 const menuCardCount=document.getElementById('menu-card-count');
 if(menuCardCount)menuCardCount.textContent=gameState.cards.length;
 const isMobile=/Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -2679,6 +2825,179 @@ function resetGame(){
     location.reload();
   }
 }
-</script>
+
+// ============================================================
+// PHASE 5: TUTORIAL SYSTEM
+// ============================================================
+const TUTORIAL_STEPS=[
+  {title:'歡迎來到數學RPG！',text:'在這個遊戲裡，你要探索學校，進入各個教室答題！',icon:'🎮'},
+  {title:'移動角色',text:'使用左下角搖桿或鍵盤方向鍵移動角色。',icon:'🕹️'},
+  {title:'進入教室',text:'走進任何一間教室就會開始答題挑戰！',icon:'🚪'},
+  {title:'答題系統',text:'選擇正確答案得XP！答錯失HP。連勝有額外獎勵！',icon:'✅'},
+  {title:'升級成長',text:'收集足夠XP就會升級，解鎖更多功能！',icon:'⬆️'},
+  {title:'卡牌收集',text:'答對有5%機會獲得稀有卡牌，集齊50張！',icon:'🃏'},
+  {title:'每日挑戰',text:'每天完成每日挑戰和任務，保持連勝！',icon:'🌟'},
+];
+let tutorialStep=0;
+
+function showTutorial(){
+  if(gameState.tutorialDone||gameState.questionsAnswered>0)return;
+  tutorialStep=0;
+  updateTutorialUI();
+  document.getElementById('tutorial-overlay').style.display='flex';
+}
+
+function updateTutorialUI(){
+  const step=TUTORIAL_STEPS[tutorialStep];
+  document.getElementById('tutorial-icon').textContent=step.icon;
+  document.getElementById('tutorial-step').textContent=(tutorialStep+1)+'/7';
+  document.getElementById('tutorial-title').textContent=step.title;
+  document.getElementById('tutorial-text').textContent=step.text;
+  const nextBtn=document.querySelector('#tutorial-overlay button:last-child');
+  nextBtn.textContent=tutorialStep===TUTORIAL_STEPS.length-1?'開始遊戲':'下一步';
+}
+
+function nextTutorialStep(){
+  if(tutorialStep<TUTORIAL_STEPS.length-1){
+    tutorialStep++;
+    updateTutorialUI();
+  } else {
+    skipTutorial();
+  }
+}
+
+function skipTutorial(){
+  document.getElementById('tutorial-overlay').style.display='none';
+  gameState.tutorialDone=true;
+  saveState();
+}
+
+// ============================================================
+// PHASE 5: DAILY LOGIN REWARD
+// ============================================================
+function checkDailyLogin(){
+  const today=new Date().toDateString();
+  if(gameState.lastLoginDate===today)return; // already logged in today
+  const yesterday=new Date(Date.now()-86400000).toDateString();
+  if(gameState.lastLoginDate===yesterday){
+    gameState.loginStreak++;
+  } else {
+    gameState.loginStreak=1; // reset streak
+  }
+  gameState.lastLoginDate=today;
+  showLoginReward(gameState.loginStreak);
+  saveState();
+}
+
+function showLoginReward(streak){
+  const rewards=[
+    {xp:50,card:null,label:'+50 XP'},
+    {xp:100,card:null,label:'+100 XP'},
+    {xp:150,card:'common',label:'+150 XP + 普通卡牌'},
+    {xp:150,card:'common',label:'+150 XP + 普通卡牌'},
+    {xp:200,card:'rare',label:'+200 XP + 稀有卡牌'},
+    {xp:200,card:'rare',label:'+200 XP + 稀有卡牌'},
+    {xp:300,card:'legendary',label:'+300 XP + 傳說卡牌'},
+  ];
+  const reward=rewards[Math.min(streak-1,rewards.length-1)];
+  // Add XP
+  addXP(reward.xp);
+  // Add credits
+  gameState.credits=(gameState.credits||0)+5;
+  // Card drop based on streak
+  if(reward.card){
+    setTimeout(()=>{
+      const dropped=getCardDropWithRarity(reward.card);
+      if(dropped)revealCard(dropped);
+    },1200);
+  }
+  // Show reward UI
+  document.getElementById('login-reward-title').textContent='第 '+streak+' 天登入！';
+  const itemsEl=document.getElementById('login-reward-items');
+  let itemsHTML='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:20px">⭐</span><span style="color:#FAAD14;font-weight:700">+'+reward.xp+' XP</span></div>';
+  itemsHTML+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:20px">💰</span><span style="color:#1890FF;font-weight:700">+5 學分</span></div>';
+  if(reward.card){
+    const cardNames={common:'普通',rare:'稀有',legendary:'傳說'};
+    const cardEmojis={common:'⚪',rare:'🔵',legendary:'🟡'};
+    itemsHTML+='<div style="display:flex;align-items:center;gap:10px"><span style="font-size:20px">'+cardEmojis[reward.card]+'</span><span style="color:#FAAD14;font-weight:700">'+cardNames[reward.card]+'卡牌</span></div>';
+  }
+  itemsEl.innerHTML=itemsHTML;
+  document.getElementById('login-reward-overlay').style.display='flex';
+}
+
+function closeLoginReward(){
+  document.getElementById('login-reward-overlay').style.display='none';
+}
+
+// Helper: force a specific rarity card drop
+function getCardDropWithRarity(rarity){
+  const pool=ALL_CARDS.filter(c=>c.rarity===rarity&&!hasCard(c.id));
+  if(pool.length>0)return pool[Math.floor(Math.random()*pool.length)];
+  // If no new cards of that rarity, return any unowned card
+  const anyUnowned=ALL_CARDS.filter(c=>!hasCard(c.id));
+  if(anyUnowned.length>0)return anyUnowned[Math.floor(Math.random()*anyUnowned.length)];
+  return null;
+}
+
+// ============================================================
+// PHASE 5: SHOP
+// ============================================================
+function showShop(){
+  document.getElementById('shop-credits').textContent=gameState.credits||0;
+  document.getElementById('shop-overlay').style.display='flex';
+}
+
+function closeShop(){
+  document.getElementById('shop-overlay').style.display='none';
+}
+
+function buyShopItem(item){
+  const costs={hp:10,xpboost:20,cardpack:30};
+  const cost=costs[item];
+  if((gameState.credits||0)<cost){
+    showToast('學分不足！','#F5222D');
+    return;
+  }
+  gameState.credits-=cost;
+  switch(item){
+    case 'hp':
+      gameState.hp=Math.min(gameState.maxHp,gameState.hp+50);
+      showToast('已回覆 50 HP！','#52C41A');
+      break;
+    case 'xpboost':
+      // XP boost active for 5 min (placeholder - would need timer)
+      showToast('XP 加速已啟動！+50% XP（5分鐘）','#FAAD14');
+      break;
+    case 'cardpack':
+      const dropped=getCardDropWithRarity('rare');
+      if(dropped){
+        addCard(dropped.id);
+        revealCard(dropped);
+        showToast('獲得卡牌：'+dropped.name,'#FAAD14');
+      }
+      break;
+  }
+  document.getElementById('shop-credits').textContent=gameState.credits||0;
+  saveState();
+  updateHUD();
+}
+
+// ============================================================
+// PHASE 5: INIT
+// ============================================================
+function initPhase5(){
+  updateHUD();
+  checkDailyLogin();
+  // Show tutorial for new players
+  setTimeout(()=>{
+    if(!gameState.tutorialDone&&gameState.questionsAnswered===0){
+      showTutorial();
+    }
+  },1500);
+}
+
+// Call init after game loads
+window.initPhase5=initPhase5;
+
 </body>
 </html>
