@@ -1127,20 +1127,34 @@ function sfxStreak(){playTone(880,.1,'sine',.2);setTimeout(()=>playTone(1100,.15
 // MATH RENDERING
 // ============================================================
 function renderMath(el,tex){
-  if(typeof katex!=='undefined'){
-    try{
-      const clean=tex.replace(/\$([^$]+)\$/g,'\\($1\\)');
-      katex.render(clean,el,{throwOnError:false,displayMode:true});
-    }catch(e){el.textContent=tex;}
-  } else {el.textContent=tex;}
+  if(typeof katex==='undefined'){el.textContent=tex;return;}
+  el.innerHTML='';
+  const parts=tex.split(/(\$[^$]+\$)/g);
+  parts.forEach(part=>{
+    if(/^\$([^$]+)\$/.test(part)){
+      const math=part.replace(/^\$([^$]+)\$/,'$1');
+      const span=document.createElement('span');
+      try{katex.render(math,span,{throwOnError:false,displayMode:true});}catch(e){span.textContent=part;}
+      el.appendChild(span);
+    } else if(part){
+      el.appendChild(document.createTextNode(part));
+    }
+  });
 }
 function renderMathInline(el,tex){
-  if(typeof katex!=='undefined'){
-    try{
-      const clean=tex.replace(/\$([^$]+)\$/g,'\\($1\\)');
-      katex.render(clean,el,{throwOnError:false,displayMode:false});
-    }catch(e){el.textContent=tex;}
-  } else {el.textContent=tex;}
+  if(typeof katex==='undefined'){el.textContent=tex;return;}
+  el.innerHTML='';
+  const parts=tex.split(/(\$[^$]+\$)/g);
+  parts.forEach(part=>{
+    if(/^\$([^$]+)\$/.test(part)){
+      const math=part.replace(/^\$([^$]+)\$/,'$1');
+      const span=document.createElement('span');
+      try{katex.render(math,span,{throwOnError:false,displayMode:false});}catch(e){span.textContent=part;}
+      el.appendChild(span);
+    } else if(part){
+      el.appendChild(document.createTextNode(part));
+    }
+  });
 }
 
 // ============================================================
