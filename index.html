@@ -1128,12 +1128,18 @@ function sfxStreak(){playTone(880,.1,'sine',.2);setTimeout(()=>playTone(1100,.15
 // ============================================================
 function renderMath(el,tex){
   if(typeof katex!=='undefined'){
-    try{katex.render(tex,el,{throwOnError:false,displayMode:true});}catch(e){el.textContent=tex;}
+    try{
+      const clean=tex.replace(/\$([^$]+)\$/g,'\\($1\\)');
+      katex.render(clean,el,{throwOnError:false,displayMode:true});
+    }catch(e){el.textContent=tex;}
   } else {el.textContent=tex;}
 }
 function renderMathInline(el,tex){
   if(typeof katex!=='undefined'){
-    try{katex.render(tex,el,{throwOnError:false,displayMode:false});}catch(e){el.textContent=tex;}
+    try{
+      const clean=tex.replace(/\$([^$]+)\$/g,'\\($1\\)');
+      katex.render(clean,el,{throwOnError:false,displayMode:false});
+    }catch(e){el.textContent=tex;}
   } else {el.textContent=tex;}
 }
 
