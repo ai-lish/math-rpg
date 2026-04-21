@@ -49,13 +49,16 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 #quiz-meta{color:#888;font-size:12px;display:flex;gap:8px}
 #quiz-streak{color:#FF6B35;font-weight:700}
 #quiz-question{margin-bottom:16px;font-size:17px;color:#fff;line-height:1.6;min-height:50px}
-#quiz-question .katex{font-size:1.2em}
+#quiz-question .katex,#quiz-question .katex *{font-size:1.1em}
+#quiz-question .katex{display:block;text-align:center;margin:8px 0}
+.quiz-option .katex{font-size:1em}
+.quiz-option .katex *{font-size:inherit}
 .quiz-options{display:flex;flex-direction:column;gap:8px}
 .quiz-option{background:#1f2d4a;border:2px solid #2d4a6a;border-radius:10px;padding:12px 16px;color:#fff;font-size:15px;cursor:pointer;transition:all .2s;text-align:left}
 .quiz-option:hover,.quiz-option:active{border-color:#4A90D9;background:#2d4a6a}
 .quiz-option.correct{border-color:#52C41A;background:rgba(82,196,26,.2)}
 .quiz-option.wrong{border-color:#F5222D;background:rgba(245,34,45,.2)}
-.quiz-option.disabled{pointer-events:none;opacity:.7}
+.quiz-option.disabled{opacity:.5;cursor:not-allowed}
 #quiz-feedback{margin-top:14px;text-align:center;font-size:15px;font-weight:700;min-height:22px}
 #quiz-feedback.correct{color:#52C41A}
 #quiz-feedback.wrong{color:#F5222D}
@@ -211,7 +214,7 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 </div>
 
 <!-- Level Up -->
-<div id="level-up"><div class="level-up-text">⬆️ 升級！</div><div class="level-up-sub" id="level-up-info">等級 2</div></div>
+<div id="level-up"><div class="level-up-text">⬆️ 升級!</div><div class="level-up-sub" id="level-up-info">等級 2</div></div>
 
 <!-- CARD OVERLAYS -->
 <div id="card-overlay">
@@ -242,7 +245,7 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
     <div id="card-drop-name"></div>
     <div id="card-drop-effect"></div>
   </div>
-  <div id="card-drop-new" style="display:none">✨ 新卡牌！</div>
+  <div id="card-drop-new" style="display:none">✨ 新卡牌!</div>
   <div id="card-drop-tap">點擊繼續</div>
 </div>
 
@@ -315,7 +318,7 @@ try {
 // QUESTIONS - Phase 1a (original 19) + Phase 1b (40 imported) = 59 total
 // ============================================================
 const QUESTIONS_ORIGINAL = [
-{id:'alg01',topic:'代數',difficulty:1,question:'已知 $b = 3 + a^2$，求當 $a = -6$ 時 $b$ 的值',options:{A:'$39',B:'$-39',C:'$33',D:'$-33$'},answer:'A'},
+{id:'alg01',topic:'代數',difficulty:1,question:'已知 $b = 3 + a^2$,求當 $a = -6$ 時 $b$ 的值',options:{A:'$39',B:'$-39',C:'$33',D:'$-33$'},answer:'A'},
 {id:'alg02',topic:'代數',difficulty:1,question:'以代數式表示 $x$ 的平方與 $y$ 之積',options:{A:'$x^2y$',B:'$x^2+y$',C:'$x^3-y$',D:'$x^3y$'},answer:'A'},
 {id:'alg03',topic:'代數',difficulty:1,question:'計算 $\\frac{5}{8} + 0.65$ 的值',options:{A:'1.275',B:'0.775',C:'1.175',D:'0.675'},answer:'A'},
 {id:'alg04',topic:'代數',difficulty:1,question:'化簡 $7r - 8 - 4r + 3$',options:{A:'$3r - 5$',B:'$3r - 11$',C:'$11r - 5$',D:'$11r - 11$'},answer:'A'},
@@ -323,16 +326,16 @@ const QUESTIONS_ORIGINAL = [
 {id:'alg06',topic:'代數',difficulty:2,question:'計算 $\\frac{(+6) + (-8)}{(-2)}$ 的值',options:{A:'-8',B:'-4',C:'1',D:'4'},answer:'C'},
 {id:'alg07',topic:'代數',difficulty:2,question:'$-11 + 5 - 1$ 的值為',options:{A:'-7',B:'-5',C:'7',D:'-13'},answer:'A'},
 {id:'alg08',topic:'代數',difficulty:2,question:'$(+23) - (-19)$ 的值為',options:{A:'-42',B:'42',C:'-4',D:'4'},answer:'B'},
-{id:'geo01',topic:'幾何',difficulty:1,question:'已知直角三角形的兩直角邊為 3 和 4，求斜邊',options:{A:'5',B:'6',C:'7',D:'12'},answer:'A'},
-{id:'geo02',topic:'幾何',difficulty:1,question:'圓形的半徑為 7，其面積為',options:{A:'$14\\pi$',B:'$49\\pi$',C:'$7\\pi$',D:'$28\\pi$'},answer:'B'},
-{id:'geo03',topic:'幾何',difficulty:1,question:'正方形的邊長為 5，周界為',options:{A:'15',B:'20',C:'25',D:'10'},answer:'B'},
+{id:'geo01',topic:'幾何',difficulty:1,question:'已知直角三角形的兩直角邊為 3 和 4,求斜邊',options:{A:'5',B:'6',C:'7',D:'12'},answer:'A'},
+{id:'geo02',topic:'幾何',difficulty:1,question:'圓形的半徑為 7,其面積為',options:{A:'$14\\pi$',B:'$49\\pi$',C:'$7\\pi$',D:'$28\\pi$'},answer:'B'},
+{id:'geo03',topic:'幾何',difficulty:1,question:'正方形的邊長為 5,周界為',options:{A:'15',B:'20',C:'25',D:'10'},answer:'B'},
 {id:'geo04',topic:'幾何',difficulty:2,question:'三角形的內角和為',options:{A:'90°',B:'180°',C:'270°',D:'360°'},answer:'B'},
-{id:'geo05',topic:'幾何',difficulty:2,question:'長方形的長為 8，闊為 3，面積為',options:{A:'11',B:'22',C:'24',D:'8'},answer:'C'},
-{id:'stat01',topic:'統計',difficulty:1,question:'下列哪個是平均數的公式？',options:{A:'$\\bar{x}=\\frac{\\SUM x}{n}$',B:'$\\bar{x}=\\SUM x \\cdot n$',C:'$\\bar{x}=\\frac{n}{\\SUM x}$',D:'$\\bar{x}=\\SUM x + n$'},answer:'A'},
+{id:'geo05',topic:'幾何',difficulty:2,question:'長方形的長為 8,闊為 3,面積為',options:{A:'11',B:'22',C:'24',D:'8'},answer:'C'},
+{id:'stat01',topic:'統計',difficulty:1,question:'下列哪個是平均數的公式?',options:{A:'$\\bar{x}=\\frac{\\SUM x}{n}$',B:'$\\bar{x}=\\SUM x \\cdot n$',C:'$\\bar{x}=\\frac{n}{\\SUM x}$',D:'$\\bar{x}=\\SUM x + n$'},answer:'A'},
 {id:'stat02',topic:'統計',difficulty:1,question:'數據 2, 4, 6, 8 的平均數為',options:{A:'4',B:'5',C:'6',D:'8'},answer:'B'},
 {id:'stat03',topic:'統計',difficulty:2,question:'一組數據 3, 3, 3, 3 的眾數為',options:{A:'0',B:'3',C:'12',D:'無法確定'},answer:'B'},
 {id:'stat04',topic:'統計',difficulty:2,question:'數據 1, 2, 3, 4, 5 的中位數為',options:{A:'2',B:'3',C:'4',D:'5'},answer:'B'},
-{id:'stat05',topic:'統計',difficulty:1,question:'一副撲克牌有 52 張，抽到紅色的概率為',options:{A:'$\\frac{1}{2}$',B:'$\\frac{1}{4}$',C:'$\\frac{1}{3}$',D:'$\\frac{2}{3}$'},answer:'A'},
+{id:'stat05',topic:'統計',difficulty:1,question:'一副撲克牌有 52 張,抽到紅色的概率為',options:{A:'$\\frac{1}{2}$',B:'$\\frac{1}{4}$',C:'$\\frac{1}{3}$',D:'$\\frac{2}{3}$'},answer:'A'},
 ];
 
 const QUESTIONS_PHASE1B = [
@@ -345,8 +348,8 @@ const QUESTIONS_PHASE1B = [
 {id:'imp007',topic:'代數',difficulty:2,question:'化簡 $\\frac{(+6)+(-8)}{(-2)}$',options:{A:'$1$',B:'$2$',C:'$3$',D:'$6$'},answer:'A'},
 {id:'imp008',topic:'代數',difficulty:1,question:'化簡 $x^{10} \\cdot x^3$',options:{A:'$x^13$',B:'$83$',C:'$2$',D:'$68$'},answer:'A'},
 {id:'imp009',topic:'代數',difficulty:2,question:'化簡 $(6a+2b)-(8a-5b)$',options:{A:'$-2a+7b$',B:'$40$',C:'$93$',D:'$95$'},answer:'A'},
-{id:'imp010',topic:'代數',difficulty:2,question:'已知 $b=3+a^2$，若 $a=-6$，求 $b$',options:{A:'$39$',B:'$40$',C:'$41$',D:'$44$'},answer:'A'},
-{id:'imp011',topic:'代數',difficulty:2,question:'已知 $x=9y-13$，若 $y=-2$，求 $x$',options:{A:'$-31$',B:'$50$',C:'$19$',D:'$22$'},answer:'A'},
+{id:'imp010',topic:'代數',difficulty:2,question:'已知 $b=3+a^2$,若 $a=-6$,求 $b$',options:{A:'$39$',B:'$40$',C:'$41$',D:'$44$'},answer:'A'},
+{id:'imp011',topic:'代數',difficulty:2,question:'已知 $x=9y-13$,若 $y=-2$,求 $x$',options:{A:'$-31$',B:'$50$',C:'$19$',D:'$22$'},answer:'A'},
 {id:'imp012',topic:'代數',difficulty:2,question:'化簡 $x^2+3x-(2x^2-5x)$',options:{A:'$-x^2+8x$',B:'$68$',C:'$42$',D:'$75$'},answer:'A'},
 {id:'imp013',topic:'代數',difficulty:1,question:'求 12 和 18 的最小公倍數',options:{A:'$36$',B:'$37$',C:'$38$',D:'$41$'},answer:'A'},
 {id:'imp014',topic:'統計',difficulty:1,question:'把 $\\frac{3}{20}$ 化為百分數',options:{A:'$15%$',B:'$20%$',C:'$25%$',D:'$10%$'},answer:'A'},
@@ -359,23 +362,23 @@ const QUESTIONS_PHASE1B = [
 {id:'imp021',topic:'代數',difficulty:2,question:'解方程 $9+2x=18-x$',options:{A:'$3$',B:'$4$',C:'$5$',D:'$8$'},answer:'A'},
 {id:'imp022',topic:'代數',difficulty:2,question:'解方程 $7-3x=-8$',options:{A:'$5$',B:'$6$',C:'$7$',D:'$10$'},answer:'A'},
 {id:'imp023',topic:'幾何',difficulty:1,question:'三角形的內角和為',options:{A:'$180°$',B:'$62$',C:'$30$',D:'$12$'},answer:'A'},
-{id:'imp024',topic:'幾何',difficulty:1,question:'直角三角形兩直角邊為 3 和 4，斜邊為',options:{A:'$5$',B:'$6$',C:'$7$',D:'$10$'},answer:'A'},
-{id:'imp025',topic:'幾何',difficulty:1,question:'圓的半徑為 7，面積為',options:{A:'$49\\pi$',B:'$98\\pi$',C:'$24\\pi$',D:'$54\\pi$'},answer:'A'},
-{id:'imp026',topic:'幾何',difficulty:1,question:'正方形邊長為 5，周界為',options:{A:'$20$',B:'$21$',C:'$22$',D:'$25$'},answer:'A'},
-{id:'imp027',topic:'幾何',difficulty:1,question:'長方形長為 8 闊為 3，面積為',options:{A:'$24$',B:'$25$',C:'$26$',D:'$29$'},answer:'A'},
-{id:'imp028',topic:'統計',difficulty:1,question:'一副撲克牌有 52 張，抽到紅色的概率為',options:{A:'$\\frac{1}{2}$',B:'$\\frac{1}{4}$',C:'$\\frac{1}{3}$',D:'$\\frac{2}{3}$'},answer:'A'},
+{id:'imp024',topic:'幾何',difficulty:1,question:'直角三角形兩直角邊為 3 和 4,斜邊為',options:{A:'$5$',B:'$6$',C:'$7$',D:'$10$'},answer:'A'},
+{id:'imp025',topic:'幾何',difficulty:1,question:'圓的半徑為 7,面積為',options:{A:'$49\\pi$',B:'$98\\pi$',C:'$24\\pi$',D:'$54\\pi$'},answer:'A'},
+{id:'imp026',topic:'幾何',difficulty:1,question:'正方形邊長為 5,周界為',options:{A:'$20$',B:'$21$',C:'$22$',D:'$25$'},answer:'A'},
+{id:'imp027',topic:'幾何',difficulty:1,question:'長方形長為 8 闊為 3,面積為',options:{A:'$24$',B:'$25$',C:'$26$',D:'$29$'},answer:'A'},
+{id:'imp028',topic:'統計',difficulty:1,question:'一副撲克牌有 52 張,抽到紅色的概率為',options:{A:'$\\frac{1}{2}$',B:'$\\frac{1}{4}$',C:'$\\frac{1}{3}$',D:'$\\frac{2}{3}$'},answer:'A'},
 {id:'imp029',topic:'統計',difficulty:1,question:'數據 2, 4, 6, 8 的平均數為',options:{A:'$5$',B:'$6$',C:'$7$',D:'$10$'},answer:'A'},
 {id:'imp030',topic:'統計',difficulty:1,question:'數據 1, 2, 3, 4, 5 的中位數為',options:{A:'$3$',B:'$4$',C:'$5$',D:'$8$'},answer:'A'},
 {id:'imp031',topic:'統計',difficulty:1,question:'數據 3, 3, 3, 3 的眾數為',options:{A:'$3$',B:'$4$',C:'$5$',D:'$8$'},answer:'A'},
 {id:'imp032',topic:'代數',difficulty:2,question:'寫出 50 的質因數連乘式',options:{A:'$2\\times5^2$',B:'$73$',C:'$63$',D:'$42$'},answer:'A'},
-{id:'imp033',topic:'統計',difficulty:2,question:'某學校有 60%學生是初中生，初中生中 45%是男生，求隨機選出一個學生的概率',options:{A:'$0.27$',B:'$1.27$',C:'$2.27$',D:'$5.27$'},answer:'A'},
-{id:'imp034',topic:'代數',difficulty:3,question:'小敏把$120000存入銀行，年利率 2.4%，每月複利，1年後可得利息（準確至最接近的元）',options:{A:'$2912$',B:'$2913$',C:'$2914$',D:'$2917$'},answer:'A'},
-{id:'imp035',topic:'代數',difficulty:3,question:'若 $(x-5)+x-3 \\equiv Ax^2+Bx+C$，求 $B^2-A^2$',options:{A:'$5$',B:'$6$',C:'$7$',D:'$10$'},answer:'A'},
+{id:'imp033',topic:'統計',difficulty:2,question:'某學校有 60%學生是初中生,初中生中 45%是男生,求隨機選出一個學生的概率',options:{A:'$0.27$',B:'$1.27$',C:'$2.27$',D:'$5.27$'},answer:'A'},
+{id:'imp034',topic:'代數',difficulty:3,question:'小敏把$120000存入銀行,年利率 2.4%,每月複利,1年後可得利息(準確至最接近的元)',options:{A:'$2912$',B:'$2913$',C:'$2914$',D:'$2917$'},answer:'A'},
+{id:'imp035',topic:'代數',difficulty:3,question:'若 $(x-5)+x-3 \\equiv Ax^2+Bx+C$,求 $B^2-A^2$',options:{A:'$5$',B:'$6$',C:'$7$',D:'$10$'},answer:'A'},
 {id:'imp036',topic:'代數',difficulty:2,question:'求直線 $5x+9y-1=0$ 的 x 截距',options:{A:'$\\frac{1}{5}$',B:'$83$',C:'$13$',D:'$47$'},answer:'A'},
 {id:'imp037',topic:'代數',difficulty:3,question:'cos$(90°-A)$·cos$(-A)$/sin$(360°-A)$ =',options:{A:'$-cotA$',B:'$27$',C:'$97$',D:'$85$'},answer:'A'},
 {id:'imp038',topic:'代數',difficulty:2,question:'求方程 $2x^2-6-3x=0$ 的判別式',options:{A:'$57$',B:'$58$',C:'$59$',D:'$62$'},answer:'A'},
 {id:'imp039',topic:'代數',difficulty:2,question:'解方程 $8x^3=\\frac{1}{216}$',options:{A:'$\\frac{1}{2}$',B:'$11$',C:'$4$',D:'$8$'},answer:'A'},
-{id:'imp040',topic:'代數',difficulty:3,question:'若 $y$ 隨 $x^2$ 正變，$x$ 增加 15%，$y$ 增加多少',options:{A:'$32.25%$',B:'$37%$',C:'$42%$',D:'$27%$'},answer:'A'},
+{id:'imp040',topic:'代數',difficulty:3,question:'若 $y$ 隨 $x^2$ 正變,$x$ 增加 15%,$y$ 增加多少',options:{A:'$32.25%$',B:'$37%$',C:'$42%$',D:'$27%$'},answer:'A'},
 ];
 
 // Combined: all questions
@@ -536,7 +539,7 @@ function submitToGAS(answerData){
 // AUTHENTICATION
 // ============================================================
 function signIn(){
-  if(!firebaseConfigured){alert('Firebase未配置，無法登入。\n請查看 SETUP.md 了解如何配置。');return;}
+  if(!firebaseConfigured){alert('Firebase未配置,無法登入。\n請查看 SETUP.md 了解如何配置。');return;}
   const provider=new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({hd:'lsh.edu.hk'}); // School domain
   firebase.auth().signInWithPopup(provider).then(result=>{
@@ -795,6 +798,11 @@ function renderMath(el,tex){
     try{katex.render(tex,el,{throwOnError:false,displayMode:true});}catch(e){el.textContent=tex;}
   } else {el.textContent=tex;}
 }
+function renderMathInline(el,tex){
+  if(window.katex){
+    try{katex.render(tex,el,{throwOnError:false,displayMode:false});}catch(e){el.textContent=tex;}
+  } else {el.textContent=tex;}
+}
 
 // ============================================================
 // QUIZ SYSTEM
@@ -808,30 +816,38 @@ function startQuiz(topic,name){
   const q=filtered[Math.floor(Math.random()*filtered.length)]||ALL_QUESTIONS[Math.floor(Math.random()*ALL_QUESTIONS.length)];
   currentQuiz=q;
   quizQuestionCount++;
-  
+
   document.getElementById('quiz-overlay').style.display='flex';
   document.getElementById('quiz-topic').textContent=name+' 挑戰';
   document.getElementById('quiz-streak').textContent='🔥'+gameState.streak+'連勝';
   document.getElementById('quiz-qnum').textContent='Q'+quizQuestionCount;
-  
+
   const qEl=document.getElementById('quiz-question');
   qEl.innerHTML='';
   renderMath(qEl,q.question);
-  
+
   const optsEl=document.getElementById('quiz-options');
   optsEl.innerHTML='';
   const keys=Object.keys(q.options);
   keys.forEach(k=>{
     const btn=document.createElement('button');
     btn.className='quiz-option';
+    btn.style.cssText='background:#1f2d4a;border:2px solid #2d4a6a;border-radius:10px;padding:10px 14px;color:#fff;font-size:15px;cursor:pointer;width:100%;text-align:left;display:flex;align-items:center;gap:8px;transition:all .2s';
+    const letter=document.createElement('span');
+    letter.textContent=k+') ';
+    letter.style.cssText='color:#4A90D9;font-weight:700;min-width:28px;flex-shrink:0';
     const optEl=document.createElement('span');
-    renderMath(optEl,q.options[k]);
+    optEl.style.cssText='flex:1;min-width:0';
+    renderMathInline(optEl,q.options[k]);
+    btn.appendChild(letter);
     btn.appendChild(optEl);
     btn.dataset.key=k;
     btn.onclick=()=>submitAnswer(k);
+    btn.addEventListener('mouseenter',()=>{if(!btn.classList.contains('disabled')){btn.style.borderColor='#4A90D9';btn.style.background='#2d4a6a';}});
+    btn.addEventListener('mouseleave',()=>{if(!btn.classList.contains('disabled')){btn.style.borderColor='#2d4a6a';btn.style.background='#1f2d4a';}});
     optsEl.appendChild(btn);
   });
-  
+
   document.getElementById('quiz-feedback').textContent='';
   document.getElementById('quiz-feedback').className='';
 }
@@ -841,13 +857,14 @@ function submitAnswer(key){
   btns.forEach(b=>b.classList.add('disabled'));
   const isCorrect=(key===currentQuiz.answer);
   
-  document.querySelector(`.quiz-option[data-key="${key}"]`).classList.add(isCorrect?'correct':'wrong');
-  if(!isCorrect){
-    document.querySelector(`.quiz-option[data-key="${currentQuiz.answer}"]`).classList.add('correct');
-  }
-  
+  // Find the clicked button and the correct button
+  btns.forEach(b=>{
+    if(b.dataset.key===key) b.classList.add(isCorrect?'correct':'wrong');
+    if(b.dataset.key===currentQuiz.answer) b.classList.add('correct');
+  });
+
   const xpGain=20+currentQuiz.difficulty*5;
-  
+
   if(isCorrect){
     sfxCorrect();
     // Streak bonus
@@ -858,7 +875,7 @@ function submitAnswer(key){
     gameState.correctAnswers++;
     gameState.dailyCorrect++;
     const bonusText=streakBonus>0?` +${streakBonus}連勝`:'';
-    document.getElementById('quiz-feedback').textContent=`✓ 正確！ +${xpGain}${bonusText} XP`;
+    document.getElementById('quiz-feedback').textContent=`✓ 正確! +${xpGain}${bonusText} XP`;
     document.getElementById('quiz-feedback').className='correct';
     if(gameState.streak>=3)sfxStreak();
     queueAnswer(currentQuiz.id,true,currentQuiz.difficulty);
@@ -870,12 +887,12 @@ function submitAnswer(key){
     sfxWrong();
     gameState.streak=0;
     loseHP(20);
-    document.getElementById('quiz-feedback').textContent='✗ 錯誤！ -20 HP';
+    document.getElementById('quiz-feedback').textContent='✗ 錯誤! -20 HP';
     document.getElementById('quiz-feedback').className='wrong';
     queueAnswer(currentQuiz.id,false,currentQuiz.difficulty);
     submitToGAS({questionId:currentQuiz.id,answer:key,isCorrect:false,difficulty:currentQuiz.difficulty});
   }
-  
+
   gameState.questionsAnswered++;
   checkDailyTasks();
   document.getElementById('quiz-streak').textContent='🔥'+gameState.streak+'連勝';
@@ -1013,9 +1030,9 @@ const ROOMS=[
 
 class MainScene extends Phaser.Scene{
   constructor(){super({key:'Main'});this.player=null;this.cursors=null;this.joystick={x:0,y:0};this.lastTile=null;this.lastRoom=null;}
-  
+
   preload(){this.createPixelTextures();}
-  
+
   create(){
     this.physics.world.setBounds(0,0,MAP_COLS*TILE,MAP_ROWS*TILE);
     this.drawMap();
@@ -1032,7 +1049,7 @@ class MainScene extends Phaser.Scene{
     },loop:true});
     updateHUD();
   }
-  
+
   createPixelTextures(){
     const mk=(key,w,h,draw)=>{const g=this.make.graphics({add:false});draw(g);g.generateTexture(key,w,h);g.destroy();};
     mk('floor',TILE,TILE,g=>{g.fillStyle(0x8b5d8b);g.fillRect(0,0,TILE,TILE);g.fillStyle(0x956799);g.fillRect(0,0,TILE/2,TILE/2);g.fillRect(TILE/2,TILE/2,TILE/2,TILE/2);});
@@ -1049,7 +1066,7 @@ class MainScene extends Phaser.Scene{
     });
     mk('heart',16,16,g=>{g.fillStyle(0xf5222d);g.fillCircle(8,8,7);g.fillStyle(0xff6464);g.fillCircle(6,6,3);});
   }
-  
+
   drawMap(){
     const floor=this.add.group();
     for(let y=0;y<MAP_ROWS;y++)for(let x=0;x<MAP_COLS;x++){
@@ -1068,14 +1085,14 @@ class MainScene extends Phaser.Scene{
       sign.setOrigin(.5);
     });
   }
-  
+
   getTile(x,y){
     if(x<1||x>=MAP_COLS-1||y<1||y>=MAP_ROWS-1)return'wall';
     if(y===7&&x>=4&&x<=6)return'entrance';
     for(const r of ROOMS)if(x>=r.tileX&&x<r.tileX+r.w&&y>=r.tileY&&y<r.tileY+r.h)return'classroom';
     return'floor';
   }
-  
+
   setupJoystick(){
     const zone=document.getElementById('joystick-zone');
     const knob=document.getElementById('joystick-knob');
@@ -1113,13 +1130,13 @@ class MainScene extends Phaser.Scene{
     document.addEventListener('touchmove',e=>{if(drag)handle(e);},{passive:false});
     document.addEventListener('touchend',()=>{if(drag){drag=false;this.joystick={x:0,y:0};knob.style.transform='translate(0,0)';}});
   }
-  
+
   handleTap(pointer){
     const worldPt=this.cameras.main.getWorldPoint(pointer.x,pointer.y);
     const tx=Math.floor(worldPt.x/TILE),ty=Math.floor(worldPt.y/TILE);
     for(const r of ROOMS){if(tx>=r.tileX&&tx<r.tileX+r.w&&ty>=r.tileY&&ty<r.tileY+r.h){startQuiz(r.topic,r.name);return;}}
   }
-  
+
   update(){
     const speed=160;
     let vx=0,vy=0;
@@ -1152,7 +1169,7 @@ class MainScene extends Phaser.Scene{
 // INIT
 // ============================================================
 function resetGame(){
-  if(confirm('確定要重新開始嗎？所有進度將會清除。')){
+  if(confirm('確定要重新開始嗎?所有進度將會清除。')){
     localStorage.removeItem('mathrpg_v1');
     location.reload();
   }
