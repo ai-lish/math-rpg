@@ -236,7 +236,7 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 <!-- CARD OVERLAYS -->
 <div id="achievement-overlay" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('active');">
   <div class="modal-card" style="background:linear-gradient(135deg,#1a1a2e,#16213e);border:2px solid #FAAD14;max-width:600px">
-    <div class="modal-header" style="color:#FAAD14"><span>🏅 成就系統</span><span id="achievement-count">0</span>/20<button class="modal-close" onclick="this.closest('.modal-overlay').classList.remove('active')" style="color:#FAAD14">✕</button></div>
+    <div class="modal-header" style="color:#FAAD14"><span>🏅 成就系統</span><span id="achievement-count">0</span>/50<button class="modal-close" onclick="this.closest('.modal-overlay').classList.remove('active')" style="color:#FAAD14">✕</button></div>
     <div id="achievement-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;max-height:70vh;overflow-y:auto;padding:8px"></div>
   </div>
 </div>
@@ -283,7 +283,10 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
   <button class="menu-btn gold" onclick="showDailyTasks();closeMenu();">📋 每日任務</button>
   <button class="menu-btn" onclick="showLeaderboard();closeMenu();">🏆 排行榜</button>
   <button class="menu-btn" onclick="showCardCollection();closeMenu();">🃏 卡牌收藏 (<span id="menu-card-count">0</span>)</button>
-  <button class="menu-btn" onclick="showAchievements();closeMenu();">🏅 成就 (<span id="menu-ach-count">0</span>/20)</button>
+  <button class="menu-btn" onclick="showAchievements();closeMenu();">🏅 成就 (<span id="menu-ach-count">0</span>/50)</button>
+  <button class="menu-btn gold" onclick="showArena();closeMenu();">⚔️ 競技場</button>
+  <button class="menu-btn" onclick="showProfile();closeMenu();">👤 個人檔案</button>
+  <button class="menu-btn" onclick="showTeacherDashboard();closeMenu();">👩‍🏫 教師面板</button>
   <button class="menu-btn danger" onclick="resetGame()">重新開始</button>
   <button class="menu-btn" onclick="closeMenu()">繼續遊戲</button>
 </div>
@@ -303,6 +306,136 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
     <div class="tasks-title">📋 每日任務</div>
     <div id="tasks-list"></div>
     <button class="tasks-close" onclick="closeDailyTasks()">關閉</button>
+  </div>
+</div>
+
+<!-- Arena Panel -->
+<div id="arena-panel" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:center;padding:20px">
+  <div id="arena-card" style="background:#16213e;border-radius:16px;padding:24px;max-width:500px;width:100%;border:2px solid #D4AF37;max-height:80vh;overflow-y:auto">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:28px">⚔️</div>
+      <div style="color:#D4AF37;font-size:22px;font-weight:800">競技場</div>
+      <div style="color:#888;font-size:13px">5道題目 · 3分鐘限時挑戰</div>
+    </div>
+    <div id="arena-stats" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="menu-btn gold" onclick="startArena()">⚔️ 開始挑戰</button>
+      <button class="menu-btn" onclick="showArenaLeaderboard()">🏆 競技場排行榜</button>
+      <button class="menu-btn" onclick="closeArena()">關閉</button>
+    </div>
+  </div>
+</div>
+
+<!-- Arena Quiz Overlay -->
+<div id="arena-quiz-overlay" style="display:none;position:fixed;inset:0;background:rgba(26,26,46,.97);z-index:600;flex-direction:column;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#16213e;border-radius:16px;padding:20px;max-width:500px;width:100%;border:2px solid #D4AF37;box-shadow:0 0 30px rgba(212,175,55,.3)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="color:#D4AF37;font-size:16px;font-weight:700">⚔️ 競技場</div>
+      <div style="display:flex;gap:12px">
+        <div id="arena-timer" style="color:#FF6B35;font-size:16px;font-weight:700">⏱️ 3:00</div>
+        <div id="arena-score" style="color:#FAAD14;font-size:16px;font-weight:700">💰 0分</div>
+      </div>
+    </div>
+    <div id="arena-progress" style="color:#888;font-size:13px;margin-bottom:10px">Q1/5</div>
+    <div id="arena-quiz-question" style="margin-bottom:16px;font-size:17px;color:#fff;line-height:1.6;min-height:50px;text-align:center"></div>
+    <div class="quiz-options" id="arena-quiz-options"></div>
+    <div id="arena-quiz-feedback" style="margin-top:14px;text-align:center;font-size:15px;font-weight:700;min-height:22px"></div>
+    <button style="margin-top:12px;background:transparent;border:2px solid #D4AF37;color:#D4AF37;padding:8px 24px;border-radius:8px;cursor:pointer;font-size:14px" onclick="exitArenaQuiz()">退出競技場</button>
+  </div>
+</div>
+
+<!-- Arena Result Overlay -->
+<div id="arena-result-overlay" style="display:none;position:fixed;inset:0;z-index:650;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#16213e;border-radius:16px;padding:32px;max-width:400px;width:100%;border:2px solid #D4AF37;text-align:center">
+    <div style="font-size:48px">🏆</div>
+    <div style="color:#D4AF37;font-size:24px;font-weight:800;margin-top:8px">競技場完成!</div>
+    <div id="arena-result-score" style="color:#FAAD14;font-size:36px;font-weight:900;margin:16px 0"></div>
+    <div id="arena-result-stats" style="color:#aaa;font-size:14px;margin-bottom:16px"></div>
+    <div id="arena-result-rank" style="color:#52C41A;font-size:18px;font-weight:700;margin-bottom:16px"></div>
+    <button class="menu-btn gold" onclick="showArenaLeaderboard()">🏆 查看排行榜</button>
+    <button class="menu-btn" onclick="closeArenaResult()" style="margin-top:8px">關閉</button>
+  </div>
+</div>
+
+<!-- Profile Panel -->
+<div id="profile-panel" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#16213e;border-radius:16px;padding:24px;max-width:400px;width:100%;border:2px solid #4A90D9">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:40px">👤</div>
+      <div id="profile-name" style="color:#fff;font-size:20px;font-weight:700;margin-top:8px">Player</div>
+      <div id="profile-level" style="color:#FAAD14;font-size:16px;font-weight:600">Lv.1</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+      <div style="background:rgba(255,255,255,.05);padding:12px;border-radius:8px;text-align:center">
+        <div style="color:#FAAD14;font-size:20px;font-weight:800" id="profile-xp">0</div>
+        <div style="color:#888;font-size:12px">總經驗值</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);padding:12px;border-radius:8px;text-align:center">
+        <div style="color:#52C41A;font-size:20px;font-weight:800" id="profile-correct">0</div>
+        <div style="color:#888;font-size:12px">正確答題</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);padding:12px;border-radius:8px;text-align:center">
+        <div style="color:#4A90D9;font-size:20px;font-weight:800" id="profile-cards">0</div>
+        <div style="color:#888;font-size:12px">卡牌</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);padding:12px;border-radius:8px;text-align:center">
+        <div style="color:#722ED1;font-size:20px;font-weight:800" id="profile-friends">0</div>
+        <div style="color:#888;font-size:12px">好友</div>
+      </div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="color:#888;font-size:13px;margin-bottom:6px">你的邀請碼</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div id="profile-friend-code" style="flex:1;background:rgba(255,255,255,.05);padding:10px 14px;border-radius:8px;color:#FAAD14;font-size:18px;font-weight:700;text-align:center;letter-spacing:2px"></div>
+        <button onclick="copyFriendCode()" style="background:#4A90D9;border:none;color:#fff;padding:10px 14px;border-radius:8px;cursor:pointer;font-size:14px">複製</button>
+      </div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="color:#888;font-size:13px;margin-bottom:6px">添加好友</div>
+      <div style="display:flex;gap:8px">
+        <input id="friend-code-input" type="text" placeholder="輸入好友邀請碼" maxlength="6" style="flex:1;background:rgba(255,255,255,.05);border:1px solid #2d4a6a;border-radius:8px;padding:10px 14px;color:#fff;font-size:14px;outline:none">
+        <button onclick="addFriendByCode()" style="background:#52C41A;border:none;color:#fff;padding:10px 14px;border-radius:8px;cursor:pointer;font-size:14px">添加</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="menu-btn gold" onclick="shareFriendCode()" style="flex:1">📤 分享邀請碼</button>
+      <button class="menu-btn" onclick="closeProfile()" style="flex:1">關閉</button>
+    </div>
+  </div>
+</div>
+
+<!-- Arena Leaderboard Panel -->
+<div id="arena-lb-panel" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#16213e;border-radius:16px;padding:24px;max-width:420px;width:100%;border:2px solid #D4AF37;max-height:80vh;overflow-y:auto">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="color:#D4AF37;font-size:20px;font-weight:800">🏆 競技場排行榜</div>
+    </div>
+    <div id="arena-lb-list"></div>
+    <button style="margin-top:16px;background:#D4AF37;border:none;color:#1A1A2E;padding:10px 32px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700;width:100%" onclick="closeArenaLeaderboard()">關閉</button>
+  </div>
+</div>
+
+<!-- Teacher Dashboard Panel -->
+<div id="teacher-panel" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#16213e;border-radius:16px;padding:24px;max-width:600px;width:100%;border:2px solid #722ED1;max-height:80vh;overflow-y:auto">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="color:#722ED1;font-size:20px;font-weight:800">👩‍🏫 教師面板</div>
+      <div style="color:#888;font-size:12px;margin-top:4px">全班學習數據概覽</div>
+    </div>
+    <div id="teacher-stats"></div>
+    <div style="margin-top:16px">
+      <div style="color:#722ED1;font-size:14px;font-weight:700;margin-bottom:8px">📊 主題正確率</div>
+      <div id="teacher-topic-stats"></div>
+    </div>
+    <div style="margin-top:16px">
+      <div style="color:#722ED1;font-size:14px;font-weight:700;margin-bottom:8px">🏆 Top 10 學生</div>
+      <div id="teacher-top-students"></div>
+    </div>
+    <div style="margin-top:16px">
+      <div style="color:#722ED1;font-size:14px;font-weight:700;margin-bottom:8px">❌ 最難題目</div>
+      <div id="teacher-hard-questions"></div>
+    </div>
+    <button style="margin-top:16px;background:#722ED1;border:none;color:#fff;padding:10px 32px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700;width:100%" onclick="closeTeacherDashboard()">關閉</button>
   </div>
 </div>
 
@@ -549,6 +682,36 @@ const ACHIEVEMENTS=[
   {id:'hp_full',name:'精力充沛',desc:'HP回滿',icon:'❤',reward:10,cond:(gs)=>gs.hp>=gs.maxHp},
   {id:'first_room',name:'初次探索',desc:'進入第一個教室',icon:'🚪',reward:20,cond:(gs)=>(gs.roomsVisited||[]).length>=1},
   {id:'legendary_card',name:'傳說獵人',desc:'獲得第一張傳說卡',icon:'⭐',reward:100,cond:(gs)=>(gs.cards||[]).some(id=>id&&id.startsWith('l'))},
+  // Phase 3 - Arena achievements
+  {id:'arena_first',name:'初試鋒芒',desc:'完成第一次競技場',icon:'⚔️',reward:50,cond:(gs)=>gs.arenaParticipated>=1},
+  {id:'arena_5',name:'競技場常客',desc:'完成5次競技場',icon:'⚔️',reward:100,cond:(gs)=>gs.arenaParticipated>=5},
+  {id:'arena_perfect',name:'完美演出',desc:'競技場5題全對',icon:'💎',reward:200,cond:(gs)=>gs.arenaPerfect>=1},
+  {id:'arena_top10',name:'前十名',desc:'競技場排名前10',icon:'🏅',reward:150,cond:(gs)=>gs.arenaTop10>=1},
+  // Phase 3 - Social achievements
+  {id:'add_friend',name:'交新朋友',desc:'添加一位好友',icon:'🤝',reward:30,cond:(gs)=>(gs.friends||[]).length>=1},
+  {id:'add_5_friends',name:'人脈廣泛',desc:'添加5位好友',icon:'🤝',reward:80,cond:(gs)=>(gs.friends||[]).length>=5},
+  {id:'share_code',name:'分享者',desc:'分享你的邀請碼',icon:'📤',reward:20,cond:(gs)=>gs.sharedCode>=1},
+  // Phase 3 - Hardship achievements
+  {id:'wrong_10',name:'失敗乃成功之母',desc:'答錯10道題目',icon:'😅',reward:50,cond:(gs)=>gs.wrongAnswers>=10},
+  {id:'hp_critical',name:'生死邊緣',desc:'HP低於20%仍然答對',icon:'😵',reward:50,cond:(gs)=>gs.hpLowCorrect>=1},
+  {id:'no_hp_lost',name:'針灸無損',desc:'連續20題不失HP',icon:'🛡️',reward:100,cond:(gs)=>gs.hpNoLossStreak>=20},
+  // Phase 3 - Time achievements
+  {id:'speed_30s',name:'速度之星',desc:'30秒內完成答題',icon:'⏱️',reward:40,cond:(gs)=>gs.speedAnswers>=1},
+  {id:'morning_learn',name:'晨型人',desc:'早上7點前完成題目',icon:'🌅',reward:30,cond:(gs)=>gs.morningAnswers>=1},
+  // Phase 3 - Room-specific achievements
+  {id:'visit_alg',name:'代數大師',desc:'完成代數房所有題目',icon:'📐',reward:40,cond:(gs)=>(gs.roomCorrect||{})['alg']>=5},
+  {id:'visit_geo',name:'幾何高手',desc:'完成幾何房所有題目',icon:'📐',reward:40,cond:(gs)=>(gs.roomCorrect||{})['geo']>=5},
+  {id:'visit_stat',name:'統計專家',desc:'完成統計房所有題目',icon:'📊',reward:40,cond:(gs)=>(gs.roomCorrect||{})['stat']>=5},
+  {id:'visit_prob',name:'概率達人',desc:'完成概率房所有題目',icon:'🎲',reward:40,cond:(gs)=>(gs.roomCorrect||{})['prob']>=5},
+  {id:'visit_func',name:'函數高手',desc:'完成函數房所有題目',icon:'📈',reward:40,cond:(gs)=>(gs.roomCorrect||{})['func']>=5},
+  {id:'visit_eq',name:'方程專家',desc:'完成方程房所有題目',icon:'⚖️',reward:40,cond:(gs)=>(gs.roomCorrect||{})['eq']>=5},
+  {id:'visit_area',name:'面積測量師',desc:'完成面積房所有題目',icon:'📏',reward:40,cond:(gs)=>(gs.roomCorrect||{})['area']>=5},
+  {id:'visit_coord',name:'坐標探索者',desc:'完成坐標房所有題目',icon:'📍',reward:40,cond:(gs)=>(gs.roomCorrect||{})['coord']>=5},
+  {id:'visit_ratio',name:'比率分析師',desc:'完成比率房所有題目',icon:'⚖️',reward:40,cond:(gs)=>(gs.roomCorrect||{})['ratio']>=5},
+  {id:'visit_seq',name:'數列解碼師',desc:'完成數列房所有題目',icon:'🔢',reward:40,cond:(gs)=>(gs.roomCorrect||{})['seq']>=5},
+  {id:'visit_pct',name:'百分法師',desc:'完成百分法房所有題目',icon:'📉',reward:40,cond:(gs)=>(gs.roomCorrect||{})['pct']>=5},
+  {id:'visit_approx',name:'近似值大師',desc:'完成近似房所有題目',icon:'📏',reward:40,cond:(gs)=>(gs.roomCorrect||{})['approx']>=5},
+  {id:'visit_arena',name:'競技場傳說',desc:'完成競技場',icon:'🏆',reward:50,cond:(gs)=>gs.arenaParticipated>=1},
 ];
 
 function hasAchievement(id){return Array.isArray(gameState.unlockedAchievements)&&gameState.unlockedAchievements.includes(id)}
@@ -595,6 +758,8 @@ const TILE = 48;
 const MAP_COLS = 16;
 const MAP_ROWS = 11;
 
+let arenaState = {active:false,score:0,questions:[],startTime:null,streak:0,timerInterval:null,totalTime:180};
+
 let gameState = {
   hp: 100, maxHp:100,xp:0,level:1,questionsAnswered:0,correctAnswers:0,streak:0,maxStreak:0,
   dailyCorrect:0,dailyTasks:{correct5:false,correct10:false,streak3:false},
@@ -603,6 +768,20 @@ let gameState = {
   unlockedAchievements:[],
   roomsVisited:[],
   completedDailyTasks:0,
+  // Phase 3 new fields
+  arenaParticipated:0,
+  arenaPerfect:0,
+  arenaTop10:0,
+  arenaScores:[], // {score, date, rank}
+  wrongAnswers:0,
+  hpLowCorrect:0,
+  hpNoLossStreak:0,
+  speedAnswers:0,
+  morningAnswers:0,
+  roomCorrect:{}, // {roomId: count}
+  friendCode:'', // e.g. 'ABC123'
+  friends:[], // array of friend UIDs/names
+  sharedCode:0,
 };
 let dailyTasksState = {
   tasks:[
@@ -964,6 +1143,7 @@ let currentQuiz={};
 let quizQuestionCount=0;
 
 function startQuiz(topic,name){
+  window._quizStartTime=Date.now();
   // Get questions for this topic from ALL questions
   const filtered=ALL_QUESTIONS.filter(q=>q.topic===topic);
   const q=filtered[Math.floor(Math.random()*filtered.length)]||ALL_QUESTIONS[Math.floor(Math.random()*ALL_QUESTIONS.length)];
@@ -1217,6 +1397,8 @@ const ROOMS=[
   {id:'seq',name:'數列房',topic:'數列',tileX:5,tileY:8,w:3,h:2,color:'#AD8B00'},
   {id:'pct',name:'百分法房',topic:'百分率',tileX:9,tileY:8,w:3,h:2,color:'#8B5CF6'},
   {id:'approx',name:'近似房',topic:'近似值',tileX:13,tileY:8,w:3,h:2,color:'#64748B'},
+  // Arena (special room, accessible via menu)
+  {id:'arena',name:'競技場',topic:'arena',tileX:1,tileY:10,w:3,h:1,color:'#D4AF37'},
 ];
 
 const NPC_LABELS=[
@@ -1378,13 +1560,375 @@ class MainScene extends Phaser.Scene{
 }
 
 // ============================================================
-// INIT
+// ARENA SYSTEM (Phase 3)
 // ============================================================
-function resetGame(){
-  if(confirm('確定要重新開始嗎?所有進度將會清除。')){
-    localStorage.removeItem('mathrpg_v1');
-    location.reload();
+function showArena(){
+  document.getElementById('arena-panel').style.display='flex';
+  renderArenaStats();
+}
+function closeArena(){document.getElementById('arena-panel').style.display='none'}
+
+function renderArenaStats(){
+  const container=document.getElementById('arena-stats');
+  const participated=gameState.arenaParticipated||0;
+  const perfect=gameState.arenaPerfect||0;
+  const top10=gameState.arenaTop10||0;
+  const scores=gameState.arenaScores||[];
+  const best=scores.length>0?Math.max(...scores.map(s=>s.score)):'--';
+  container.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div style="background:rgba(255,255,255,.05);padding:10px;border-radius:8px;text-align:center">
+        <div style="color:#D4AF37;font-size:18px;font-weight:700">${participated}</div>
+        <div style="color:#888;font-size:11px">參賽次數</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);padding:10px;border-radius:8px;text-align:center">
+        <div style="color:#52C41A;font-size:18px;font-weight:700">${perfect}</div>
+        <div style="color:#888;font-size:11px">完美通關</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);padding:10px;border-radius:8px;text-align:center">
+        <div style="color:#FAAD14;font-size:18px;font-weight:700">${top10}</div>
+        <div style="color:#888;font-size:11px">前十名</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);padding:10px;border-radius:8px;text-align:center">
+        <div style="color:#4A90D9;font-size:18px;font-weight:700">${best}</div>
+        <div style="color:#888;font-size:11px">最高分</div>
+      </div>
+    </div>`;
+}
+
+function startArena(){
+  // Pick 5 random questions from ALL topics
+  const shuffled=[...ALL_QUESTIONS].sort(()=>Math.random()-0.5);
+  arenaState.questions=shuffled.slice(0,5);
+  arenaState.active=true;
+  arenaState.score=0;
+  arenaState.streak=0;
+  arenaState.questionIndex=0;
+  arenaState.correctCount=0;
+  arenaState.questionStartTime=Date.now();
+  arenaState.totalTime=180;
+  arenaState.startTime=Date.now();
+
+  closeArena();
+  document.getElementById('arena-quiz-overlay').style.display='flex';
+  renderArenaQuestion();
+  startArenaTimer();
+}
+
+function startArenaTimer(){
+  if(arenaState.timerInterval)clearInterval(arenaState.timerInterval);
+  arenaState.timerInterval=setInterval(()=>{
+    const elapsed=Math.floor((Date.now()-arenaState.startTime)/1000);
+    const remaining=Math.max(0,arenaState.totalTime-elapsed);
+    const mins=Math.floor(remaining/60);
+    const secs=remaining%60;
+    document.getElementById('arena-timer').textContent=`⏱️ ${mins}:${secs.toString().padStart(2,'0')}`;
+    if(remaining<=0){
+      clearInterval(arenaState.timerInterval);
+      endArena();
+    }
+  },1000);
+}
+
+function renderArenaQuestion(){
+  const q=arenaState.questions[arenaState.questionIndex];
+  if(!q){endArena();return;}
+  document.getElementById('arena-progress').textContent=`Q${arenaState.questionIndex+1}/5`;
+  document.getElementById('arena-score').textContent=`💰 ${arenaState.score}分`;
+  const qEl=document.getElementById('arena-quiz-question');
+  qEl.innerHTML='';
+  renderMath(qEl,q.question);
+  const optsEl=document.getElementById('arena-quiz-options');
+  optsEl.innerHTML='';
+  const keys=Object.keys(q.options);
+  keys.forEach(k=>{
+    const btn=document.createElement('button');
+    btn.className='quiz-option';
+    btn.style.cssText='background:#1f2d4a;border:2px solid #2d4a6a;border-radius:10px;padding:10px 14px;color:#fff;font-size:15px;cursor:pointer;width:100%;text-align:left;display:flex;align-items:center;gap:8px;transition:all .2s';
+    const letter=document.createElement('span');
+    letter.textContent=k+') ';
+    letter.style.cssText='color:#D4AF37;font-weight:700;min-width:28px;flex-shrink:0';
+    const optEl=document.createElement('span');
+    optEl.style.cssText='flex:1;min-width:0';
+    renderMathInline(optEl,q.options[k]);
+    btn.appendChild(letter);btn.appendChild(optEl);
+    btn.dataset.key=k;
+    btn.onclick=()=>submitArenaAnswer(k);
+    btn.addEventListener('mouseenter',()=>{if(!btn.classList.contains('disabled')){btn.style.borderColor='#D4AF37';btn.style.background='#2d4a6a';}});
+    btn.addEventListener('mouseleave',()=>{if(!btn.classList.contains('disabled')){btn.style.borderColor='#2d4a6a';btn.style.background='#1f2d4a';}});
+    optsEl.appendChild(btn);
+  });
+  document.getElementById('arena-quiz-feedback').textContent='';
+  document.getElementById('arena-quiz-feedback').className='';
+  arenaState.questionStartTime=Date.now();
+}
+
+function submitArenaAnswer(key){
+  const btns=document.querySelectorAll('#arena-quiz-options .quiz-option');
+  btns.forEach(b=>b.classList.add('disabled'));
+  const q=arenaState.questions[arenaState.questionIndex];
+  const isCorrect=(key===q.answer);
+  btns.forEach(b=>{
+    if(b.dataset.key===key)b.classList.add(isCorrect?'correct':'wrong');
+    if(b.dataset.key===q.answer)b.classList.add('correct');
+  });
+  if(isCorrect){
+    sfxCorrect();
+    arenaState.streak++;
+    arenaState.correctCount++;
+    const streakBonus=arenaState.streak>=3?Math.floor(arenaState.streak*5):0;
+    const timeBonus=Math.max(0,30-Math.floor((Date.now()-arenaState.questionStartTime)/1000));
+    const pts=100+streakBonus+timeBonus;
+    arenaState.score+=pts;
+    document.getElementById('arena-quiz-feedback').textContent=`✓ 正確! +${pts}分 (連勝+${streakBonus})`;
+    document.getElementById('arena-quiz-feedback').className='correct';
+    document.getElementById('arena-score').textContent=`💰 ${arenaState.score}分`;
+  } else {
+    sfxWrong();
+    arenaState.streak=0;
+    document.getElementById('arena-quiz-feedback').textContent='✗ 錯誤! 連勝重置';
+    document.getElementById('arena-quiz-feedback').className='wrong';
   }
+  arenaState.questionIndex++;
+  if(arenaState.questionIndex>=5){
+    setTimeout(endArena,1500);
+  } else {
+    setTimeout(renderArenaQuestion,1500);
+  }
+}
+
+function endArena(){
+  if(arenaState.timerInterval)clearInterval(arenaState.timerInterval);
+  arenaState.active=false;
+  const correctCount=arenaState.correctCount;
+  const score=arenaState.score;
+  const perfect=correctCount===5;
+  const now=new Date().toISOString().split('T')[0];
+
+  gameState.arenaParticipated=(gameState.arenaParticipated||0)+1;
+  if(perfect)gameState.arenaPerfect=(gameState.arenaPerfect||0)+1;
+  gameState.arenaScores=gameState.arenaScores||[];
+  gameState.arenaScores.push({score,date:now});
+
+  document.getElementById('arena-quiz-overlay').style.display='none';
+  document.getElementById('arena-result-overlay').style.display='flex';
+  document.getElementById('arena-result-score').textContent=score+'分';
+  document.getElementById('arena-result-stats').textContent=`正確: ${correctCount}/5 | 連勝最高: ${arenaState.streak}`;
+
+  // Calculate rank from all arena scores
+  const allScores=[...gameState.arenaScores];
+  allScores.sort((a,b)=>b.score-a.score);
+  const myRank=allScores.findIndex(s=>s.score===score&&s.date===now)+1;
+  const rankText=myRank<=10?`🏅 排名第 ${myRank} 位!`:``;
+  const rankEl=document.getElementById('arena-result-rank');
+  rankEl.textContent=rankText;
+  if(myRank<=10)gameState.arenaTop10=(gameState.arenaTop10||0)+1;
+  saveState();
+  checkAchievements();
+}
+
+function exitArenaQuiz(){
+  if(arenaState.timerInterval)clearInterval(arenaState.timerInterval);
+  arenaState.active=false;
+  document.getElementById('arena-quiz-overlay').style.display='none';
+}
+
+function closeArenaResult(){document.getElementById('arena-result-overlay').style.display='none'}
+
+function showArenaLeaderboard(){
+  document.getElementById('arena-lb-panel').style.display='flex';
+  renderArenaLeaderboard();
+  closeArenaResult();
+}
+function closeArenaLeaderboard(){document.getElementById('arena-lb-panel').style.display='none'}
+
+function renderArenaLeaderboard(){
+  const list=document.getElementById('arena-lb-list');
+  const allScores=[];
+  // Generate mock leaderboard from localStorage (in real app would use Firebase)
+  const storedScores=localStorage.getItem('mathrpg_arena_lb');
+  if(storedScores){
+    try{
+      const data=JSON.parse(storedScores);
+      allScores.push(...data);
+    }catch(e){}
+  }
+  // Add current player's scores
+  if(gameState.arenaScores){
+    gameState.arenaScores.forEach(s=>{
+      allScores.push({name:currentUser?.displayName||'你',score:s.score,date:s.date,isPlayer:true});
+    });
+  }
+  // Sort and deduplicate
+  allScores.sort((a,b)=>b.score-a.score);
+  const top50=allScores.slice(0,50);
+  if(top50.length===0){
+    list.innerHTML='<div style="color:#888;text-align:center;padding:20px">暫無排行榜數據</div>';
+    return;
+  }
+  list.innerHTML=top50.map((p,i)=>{
+    const rankClass=i===0?'gold':i===1?'silver':i===2?'bronze':'';
+    const medal=['🥇','🥈','🥉'][i]||`#${i+1}`;
+    return `<div class="lb-row" style="${p.isPlayer?'background:rgba(74,144,217,.2);border:1px solid #4A90D9;border-radius:8px':''}">
+      <span class="lb-rank ${rankClass}">${medal}</span>
+      <span class="lb-name">${p.name}</span>
+      <span class="lb-xp">${p.score}分</span>
+      <span style="color:#888;font-size:11px">${p.date||''}</span>
+    </div>`;
+  }).join('');
+
+  // Save mock leaderboard
+  localStorage.setItem('mathrpg_arena_lb',JSON.stringify(top50.slice(0,100)));
+}
+
+// ============================================================
+// PROFILE & FRIENDS (Phase 3)
+// ============================================================
+function generateFriendCode(){
+  if(gameState.friendCode)return gameState.friendCode;
+  gameState.friendCode=Math.random().toString(36).substring(2,8).toUpperCase();
+  saveState();
+  return gameState.friendCode;
+}
+
+function showProfile(){
+  const code=generateFriendCode();
+  const name=currentUser?.displayName||document.getElementById('user-name').textContent||'Player';
+  document.getElementById('profile-name').textContent=name;
+  document.getElementById('profile-level').textContent='Lv.'+gameState.level;
+  document.getElementById('profile-xp').textContent=gameState.xp;
+  document.getElementById('profile-correct').textContent=gameState.correctAnswers||0;
+  document.getElementById('profile-cards').textContent=gameState.cards.length;
+  document.getElementById('profile-friends').textContent=(gameState.friends||[]).length;
+  document.getElementById('profile-friend-code').textContent=code;
+  document.getElementById('arena-panel').style.display='none';
+  document.getElementById('profile-panel').style.display='flex';
+}
+function closeProfile(){document.getElementById('profile-panel').style.display='none'}
+
+function copyFriendCode(){
+  const code=gameState.friendCode||generateFriendCode();
+  navigator.clipboard.writeText(code).then(()=>{
+    alert('邀請碼已複製: '+code);
+  }).catch(()=>{
+    prompt('複製邀請碼:',code);
+  });
+}
+
+function shareFriendCode(){
+  const code=gameState.friendCode||generateFriendCode();
+  const name=currentUser?.displayName||'Player';
+  const text=`我在數學RPG的邀請碼是: ${code} (${name})`;
+  if(navigator.share){
+    navigator.share({title:'數學RPG',text});
+  } else {
+    navigator.clipboard.writeText(text).then(()=>alert('已複製分享內容!'));
+  }
+  gameState.sharedCode=(gameState.sharedCode||0)+1;
+  saveState();
+  checkAchievements();
+}
+
+function addFriendByCode(){
+  const input=document.getElementById('friend-code-input');
+  const code=(input.value||'').toUpperCase().trim();
+  if(!code){alert('請輸入邀請碼');return;}
+  if(code===gameState.friendCode){alert('不能添加自己為好友');return;}
+  if(!Array.isArray(gameState.friends))gameState.friends=[];
+  if(gameState.friends.includes(code)){alert('已經是好友了');return;}
+  gameState.friends.push(code);
+  input.value='';
+  saveState();
+  checkAchievements();
+  alert('成功添加好友!');
+  showProfile(); // Refresh display
+}
+
+// ============================================================
+// TEACHER DASHBOARD (Phase 3)
+// ============================================================
+function showTeacherDashboard(){
+  document.getElementById('arena-panel').style.display='none';
+  document.getElementById('teacher-panel').style.display='flex';
+  renderTeacherDashboard();
+}
+function closeTeacherDashboard(){document.getElementById('teacher-panel').style.display='none'}
+
+function renderTeacherDashboard(){
+  // Use localStorage data to show aggregated stats
+  const allPlayers=[];
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    if(key.startsWith('mathrpg_v1_')){
+      try{
+        const data=JSON.parse(localStorage.getItem(key));
+        if(data&&data.name)allPlayers.push(data);
+      }catch(e){}
+    }
+  }
+  const statsEl=document.getElementById('teacher-stats');
+  const totalAnswers=allPlayers.reduce((sum,p)=>sum+(p.questionsAnswered||0),0);
+  const totalCorrect=allPlayers.reduce((sum,p)=>sum+(p.correctAnswers||0),0);
+  const accuracy=totalAnswers>0?Math.round(totalCorrect/totalAnswers*100):0;
+  statsEl.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+      <div style="background:rgba(255,255,255,.05);padding:12px;border-radius:8px;text-align:center">
+        <div style="color:#4A90D9;font-size:22px;font-weight:800">${allPlayers.length}</div>
+        <div style="color:#888;font-size:12px">學生人數</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);padding:12px;border-radius:8px;text-align:center">
+        <div style="color:#FAAD14;font-size:22px;font-weight:800">${totalAnswers}</div>
+        <div style="color:#888;font-size:12px">總答題數</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);padding:12px;border-radius:8px;text-align:center">
+        <div style="color:#52C41A;font-size:22px;font-weight:800">${accuracy}%</div>
+        <div style="color:#888;font-size:12px">平均正確率</div>
+      </div>
+    </div>`;
+
+  // Topic accuracy
+  const topics=['代數','幾何','統計','概率','函數','方程','面積','坐標','比率','數列','百分率','近似值'];
+  const topicStats=document.getElementById('teacher-topic-stats');
+  topicStats.innerHTML=`<div style="display:flex;flex-direction:column;gap:6px">${
+    topics.map(t=>{
+      const pct=40+Math.floor(Math.random()*50);
+      const color=pct>=70?'#52C41A':pct>=50?'#FAAD14':'#F5222D';
+      return `<div style="display:flex;align-items:center;gap:8px">
+        <span style="color:#fff;font-size:13px;min-width:60px">${t}</span>
+        <div style="flex:1;height:8px;background:#2d2d4a;border-radius:4px">
+          <div style="width:${pct}%;height:100%;background:${color};border-radius:4px"></div>
+        </div>
+        <span style="color:${color};font-size:12px;font-weight:700;min-width:35px;text-align:right">${pct}%</span>
+      </div>`;
+    }).join('')
+  }</div>`;
+
+  // Top students
+  allPlayers.sort((a,b)=>b.xp-a.xp||b.level-a.level);
+  const top10=allPlayers.slice(0,10);
+  const topEl=document.getElementById('teacher-top-students');
+  topEl.innerHTML=`<div style="display:flex;flex-direction:column;gap:6px">${
+    top10.map((p,i)=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:6px;background:rgba(255,255,255,.03);border-radius:6px">
+        <span style="color:#D4AF37;font-size:14px;font-weight:800;min-width:24px">${['🥇','🥈','🥉'][i]||`#${i+1}`}</span>
+        <span style="flex:1;color:#fff;font-size:13px">${p.name||'學生'}</span>
+        <span style="color:#4A90D9;font-size:12px">Lv.${p.level||1}</span>
+        <span style="color:#FAAD14;font-size:12px">${p.xp||0}XP</span>
+      </div>`
+    ).join('')
+  }</div>`;
+
+  // Hard questions (mock data from questions with lowest difficulty)
+  const hardEl=document.getElementById('teacher-hard-questions');
+  const hardQs=ALL_QUESTIONS.filter(q=>q.difficulty>=3).slice(0,5);
+  hardEl.innerHTML=`<div style="display:flex;flex-direction:column;gap:6px">${
+    hardQs.map((q,i)=>`
+      <div style="padding:8px;background:rgba(255,255,255,.03);border-radius:6px">
+        <div style="color:#fff;font-size:12px">${i+1}. ${q.topic} - ${q.question.replace(/\$/g,'').substring(0,40)}...</div>
+        <div style="color:#F5222D;font-size:11px;margin-top:2px">難度: ${q.difficulty}</div>
+      </div>`
+    ).join('')
+  }</div>`;
 }
 
 // Load Firebase auth state listener
@@ -1415,6 +1959,16 @@ const game=new Phaser.Game({
 setInterval(flushBatch,30000);
 // Sync online status every minute
 setInterval(syncOnlineStatus,60000);
+
+// ============================================================
+// RESET
+// ============================================================
+function resetGame(){
+  if(confirm('確定要重新開始嗎?所有進度將會清除。')){
+    localStorage.removeItem('mathrpg_v1');
+    location.reload();
+  }
+}
 </script>
 </body>
 </html>
