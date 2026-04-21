@@ -447,27 +447,35 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 // ============================================================
 // FIREBASE CONFIGURATION
 // ============================================================
-// Fill in your Firebase config in firebase-config.js
-// Get config from: https://console.firebase.google.com/ → Project Settings → Your apps
+// Firebase config - configured
 let firebaseConfigured = false;
 let db = null;
 let auth = null;
 let currentUser = null;
-let gasUrl = null; // Your GAS Web App URL e.g. 'https://script.google.com/macros/s/.../exec'
+let gasUrl = null;
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyA7PM_NoN67kUAzyzssXpppMh924PEWOGU",
+  authDomain: "math-rpg-1eebc.firebaseapp.com",
+  databaseURL: "https://math-rpg-1eebc-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "math-rpg-1eebc",
+  storageBucket: "math-rpg-1eebc.firebasestorage.app",
+  messagingSenderId: "838577745797",
+  appId: "1:838577745797:web:1a04cd3c51715f16285eec",
+  measurementId: "G-0KE6H18XGQ"
+};
 
 try {
-  // Try to load config
-  if (typeof FirebaseConfig !== 'undefined') {
-    firebase.initializeApp(FirebaseConfig);
-    auth = firebase.auth();
-    db = firebase.database();
-    firebaseConfigured = true;
-    document.getElementById('firebase-status').style.display = 'block';
-    document.getElementById('firebase-status').textContent = '在線';
-    document.getElementById('firebase-status').className = 'online';
-  }
+  firebase.initializeApp(FIREBASE_CONFIG);
+  auth = firebase.auth();
+  db = firebase.database();
+  firebaseConfigured = true;
+  console.log('Firebase connected!');
+  document.getElementById('firebase-status').style.display = 'block';
+  document.getElementById('firebase-status').textContent = '在線';
+  document.getElementById('firebase-status').className = 'online';
 } catch(e) {
-  console.log('Firebase not configured - offline mode');
+  console.log('Firebase init error - offline mode', e);
   document.getElementById('firebase-status').style.display = 'block';
   document.getElementById('firebase-status').textContent = '離線';
   document.getElementById('firebase-status').className = 'offline';
