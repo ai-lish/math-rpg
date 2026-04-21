@@ -706,6 +706,7 @@ function submitAnswer(key){
   
   gameState.questionsAnswered++;
   checkDailyTasks();
+  document.getElementById('quiz-streak').textContent='🔥'+gameState.streak+'連勝';
   updateStreakUI();
   saveState();
   setTimeout(exitQuiz,1500);
