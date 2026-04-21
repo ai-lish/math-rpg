@@ -589,6 +589,9 @@ function onAuthStateChanged(user){
 function loadState(){
   const s=localStorage.getItem('mathrpg_v1');
   if(s){try{const d=JSON.parse(s);gameState={...gameState,...d};}catch(e){}}
+  // Clean up corrupted card data
+  if(!Array.isArray(gameState.cards))gameState.cards=[];
+  gameState.cards=gameState.cards.filter(c=>typeof c==='string'&&c!==''&&c!=null);
   // Reset daily if new day
   const today=new Date().toDateString();
   if(gameState.lastDailyReset!==today){
@@ -908,9 +911,11 @@ function exitQuiz(){
 // ============================================================
 // CARD SYSTEM
 // ============================================================
-function hasCard(cardId){return gameState.cards.includes(cardId)}
+function hasCard(cardId){return Array.isArray(gameState.cards)&&gameState.cards.includes(cardId)}
 
 function addCard(cardId){
+  if(!cardId)return false;
+  if(!Array.isArray(gameState.cards))gameState.cards=[];
   if(!hasCard(cardId)){
     gameState.cards.push(cardId);
     saveState();
