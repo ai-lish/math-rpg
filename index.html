@@ -48,7 +48,7 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 #quiz-topic{color:#4A90D9;font-size:13px;text-transform:uppercase;letter-spacing:1px}
 #quiz-meta{color:#888;font-size:12px;display:flex;gap:8px}
 #quiz-streak{color:#FF6B35;font-weight:700}
-#quiz-question{margin-bottom:16px;font-size:17px;color:#fff;line-height:1.6;min-height:50px}
+#quiz-question{margin-bottom:16px;font-size:17px;color:#fff;line-height:1.6;min-height:80px;max-height:120px;overflow-y:auto;padding:8px}
 #quiz-question .katex,#quiz-question .katex *{font-size:1.1em}
 #quiz-question .katex{display:block;text-align:center;margin:8px 0}
 .quiz-option .katex{font-size:1em}
@@ -69,7 +69,8 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 .quiz-nav-btn:hover{background:#3d5a7a}
 
 /* ===== LEVEL UP ===== */
-#achievement-toast{position:fixed;top:-100px;left:50%;transform:translateX(-50%);z-index:500;background:linear-gradient(135deg,#1a1a2e,#16213e);border:2px solid #FAAD14;border-radius:12px;padding:12px 20px;color:#fff;font-size:14px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(250,173,20,.3);transition:top .5s;max-width:320px;width:90%;pointer-events:none}
+#achievement-overlay.active{display:flex}
+#achievement-overlay{display:none;position:fixed;inset:0;z-index:250;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;overflow-y:auto}
 #achievement-toast.show{top:20px}
 #achievement-toast .ach-icon{font-size:28px}
 #achievement-toast .ach-name{font-weight:700;color:#FAAD14}
@@ -756,7 +757,7 @@ function checkRoomVisit(roomId){
 // ============================================================
 const TILE = 48;
 const MAP_COLS = 16;
-const MAP_ROWS = 11;
+const MAP_ROWS = 12;
 
 let arenaState = {active:false,score:0,questions:[],startTime:null,streak:0,timerInterval:null,totalTime:180};
 
@@ -1126,12 +1127,12 @@ function sfxStreak(){playTone(880,.1,'sine',.2);setTimeout(()=>playTone(1100,.15
 // MATH RENDERING
 // ============================================================
 function renderMath(el,tex){
-  if(window.katex){
+  if(typeof katex!=='undefined'){
     try{katex.render(tex,el,{throwOnError:false,displayMode:true});}catch(e){el.textContent=tex;}
   } else {el.textContent=tex;}
 }
 function renderMathInline(el,tex){
-  if(window.katex){
+  if(typeof katex!=='undefined'){
     try{katex.render(tex,el,{throwOnError:false,displayMode:false});}catch(e){el.textContent=tex;}
   } else {el.textContent=tex;}
 }
@@ -1151,7 +1152,7 @@ function startQuiz(topic,name){
   quizQuestionCount++;
 
   document.getElementById('quiz-overlay').style.display='flex';
-  document.getElementById('quiz-topic').textContent=name+' 挑戰';
+  document.getElementById('quiz-topic').textContent=(name||topic)+' 挑戰';
   document.getElementById('quiz-streak').textContent='🔥'+gameState.streak+'連勝';
   document.getElementById('quiz-qnum').textContent='Q'+quizQuestionCount;
 
