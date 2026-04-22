@@ -17,29 +17,43 @@ body{background:#E8F4FD;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 #game-container{width:100vw;height:100vh;display:block}
 
 /* ===== HUD ===== */
-#hud{position:fixed;top:0;left:0;right:56px;padding:10px 15px;display:flex;gap:14px;z-index:100;pointer-events:none;flex-wrap:wrap;background:rgba(255,255,255,.75);backdrop-filter:blur(16px);border-radius:0 0 16px 0;border-bottom:1px solid rgba(255,255,255,.3);box-shadow:0 2px 12px rgba(0,0,0,.1)}
-.hud-item{display:flex;align-items:center;gap:6px;color:#1A1A2E;font-size:14px;font-weight:600}
-.hud-bar{width:80px;height:10px;background:#2d2d4a;border-radius:5px;overflow:hidden}
-.hud-fill{height:100%;border-radius:5px;transition:width .3s}
+#hud{position:fixed;top:0;left:0;right:0;padding:8px 16px;display:flex;align-items:center;gap:12px;z-index:100;background:rgba(255,255,255,.85);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.5);box-shadow:0 2px 12px rgba(0,0,0,.08)}
+#hud-left{display:flex;align-items:center;gap:12px;flex:1}
+#hud-right{display:flex;align-items:center;gap:8px}
+.hud-item{display:flex;align-items:center;gap:5px;color:#1A1A2E;font-size:13px;font-weight:600}
+.hud-bar{width:60px;height:8px;background:rgba(45,45,74,.2);border-radius:4px;overflow:hidden}
+.hud-fill{height:100%;border-radius:4px;transition:width .3s}
 #hp-bar{background:linear-gradient(90deg,#F5222D,#FF6B6B)}
 #xp-bar{background:linear-gradient(90deg,#FAAD14,#FFD700)}
-#hp-text,#xp-text{font-size:12px;color:#ccc}
-#streak-display{display:none;align-items:center;gap:4px;color:#FF6B35;font-size:13px;font-weight:700}
+#hp-text,#xp-text{font-size:11px;color:#666}
+#streak-display{display:none;align-items:center;gap:4px;color:#FF6B35;font-size:12px;font-weight:700}
 #streak-display.active{display:flex}
+#hud-difficulty{font-size:11px;color:#FAAD14;font-weight:700;background:rgba(250,173,20,.15);padding:3px 8px;border-radius:10px}
 
-/* ===== TOP-RIGHT AUTH ===== */
-#auth-area{position:fixed;top:8px;right:8px;z-index:120;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
-#user-info{display:none;flex-direction:column;align-items:flex-end;gap:2px}
+/* ===== TOP-RIGHT AUTH=*** */
+#auth-area{display:flex;align-items:center;gap:8px}
+#user-info{display:none;flex-direction:column;align-items:flex-end;gap:1px}
 #user-name{color:#1A1A2E;font-size:12px;font-weight:600}
 #user-level{color:#FAAD14;font-size:11px}
-#login-btn{background:linear-gradient(135deg,#4A90D9,#357ABD);border:none;color:#fff;padding:9px 16px;border-radius:12px;cursor:pointer;font-size:13px;font-weight:600;box-shadow:0 4px 12px rgba(74,144,217,.3)}
+#login-btn{background:linear-gradient(135deg,#4A90D9,#357ABD);border:none;color:#fff;padding:7px 14px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;box-shadow:0 2px 8px rgba(74,144,217,.25)}
 #login-btn:hover{background:#357ABD}
-#logout-btn{display:none;background:transparent;border:1px solid #F5222D;color:#F5222D;padding:5px 12px;border-radius:8px;cursor:pointer;font-size:12px}
+#logout-btn{display:none;background:transparent;border:1px solid #F5222D;color:#F5222D;padding:4px 10px;border-radius:8px;cursor:pointer;font-size:11px}
 #logout-btn:hover{background:#F5222D;color:#fff}
-#leaderboard-btn{background:#FAAD14;border:none;color:#1A1A2E;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700}
+#leaderboard-btn{background:rgba(250,173,20,.9);border:none;color:#1A1A2E;padding:6px 12px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:700;box-shadow:0 2px 8px rgba(250,173,20,.3)}
 
 /* ===== MENU BUTTON ===== */
-#menu-btn{position:fixed;top:10px;right:160px;z-index:110;background:linear-gradient(135deg,#4A90D9,#357ABD);border:none;color:#fff;padding:10px 16px;border-radius:12px;cursor:pointer;font-size:13px;font-weight:600;box-shadow:0 4px 12px rgba(74,144,217,.3)}
+#menu-btn{background:linear-gradient(135deg,#4A90D9,#357ABD);border:none;color:#fff;padding:8px 14px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;box-shadow:0 2px 8px rgba(74,144,217,.25)}
+
+/* ===== TOAST NOTIFICATION (replaces login-reward-overlay) ===== */
+#toast-container{position:fixed;bottom:20px;right:20px;z-index:500;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+.toast{background:rgba(255,255,255,.95);backdrop-filter:blur(16px);border-radius:14px;padding:14px 18px;min-width:240px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.15);border-left:4px solid #FAAD14;animation:toast-in .3s ease-out}
+.toast.toast-out{animation:toast-out .3s ease-in forwards}
+@keyframes toast-in{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes toast-out{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
+.toast-title{color:#FAAD14;font-size:15px;font-weight:700;margin-bottom:6px}
+.toast-items{display:flex;flex-direction:column;gap:4px}
+.toast-item{display:flex;align-items:center;gap:8px;color:#1A1A2E;font-size:13px}
+.toast-item span{font-size:16px}
 
 /* ===== QUIZ OVERLAY ===== */
 #quiz-overlay{display:none;position:fixed;inset:0;background:rgba(200,230,255,.92);z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:20px}
@@ -196,26 +210,30 @@ body{background:#E8F4FD;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 
 <!-- HUD -->
 <div id="hud">
-  <div class="hud-item"><span style="color:#F5222D">❤</span><div class="hud-bar"><div class="hud-fill" id="hp-bar" style="width:100%"></div></div><span id="hp-text">100</span></div>
-  <div class="hud-item"><span style="color:#FAAD14">⭐</span><div class="hud-bar"><div class="hud-fill" id="xp-bar" style="width:0%"></div></div><span id="xp-text">0</span><span id="level-text" style="color:#FAAD14">Lv.1</span></div>
-  <div id="hud-difficulty"><span id="hud-diff-icon">⭐</span><span id="hud-diff-label">易</span></div>
-  <div id="hud-credits">💰<span id="credits-display">0</span></div>
-  <div id="streak-display" class="hud-item">🔥<span id="streak-num">0</span></div>
-  <div class="hud-item" style="cursor:pointer" onclick="showCardCollection()">🃏<span id="hud-card-count" style="font-size:12px">0</span></div>
-</div>
-
-<!-- Auth Area -->
-<div id="auth-area">
-  <div id="user-info">
-    <div id="user-name">Player</div>
-    <div id="user-level">Lv.1</div>
+  <div id="hud-left">
+    <div class="hud-item"><span style="color:#F5222D">❤</span><div class="hud-bar"><div class="hud-fill" id="hp-bar" style="width:100%"></div></div><span id="hp-text">100</span></div>
+    <div class="hud-item"><span style="color:#FAAD14">⭐</span><div class="hud-bar"><div class="hud-fill" id="xp-bar" style="width:0%"></div></div><span id="xp-text">0</span><span id="level-text" style="color:#FAAD14">Lv.1</span></div>
+    <div id="hud-difficulty" style="display:none"><span id="hud-diff-icon">⭐</span><span id="hud-diff-label">易</span></div>
+    <div id="hud-credits" style="display:none">💰<span id="credits-display">0</span></div>
+    <div id="streak-display" class="hud-item" style="display:none">🔥<span id="streak-num">0</span></div>
+    <div class="hud-item" style="cursor:pointer" onclick="showCardCollection()">🃏<span id="hud-card-count" style="font-size:11px">0</span></div>
   </div>
-  <button id="leaderboard-btn" onclick="showLeaderboard()">🏆 排行榜</button>
-  <button id="login-btn" onclick="signIn()">🔐 登入</button>
-  <button id="logout-btn" onclick="signOut()">登出</button>
+  <div id="hud-right">
+    <button id="menu-btn" onclick="showMenu()">選單 ☰</button>
+    <button id="leaderboard-btn" onclick="showLeaderboard()">🏆</button>
+    <div id="auth-area">
+      <div id="user-info">
+        <div id="user-name">Player</div>
+        <div id="user-level">Lv.1</div>
+      </div>
+      <button id="login-btn" onclick="signIn()">🔐</button>
+      <button id="logout-btn" onclick="signOut()">登出</button>
+    </div>
+  </div>
 </div>
 
-<button id="menu-btn" onclick="showMenu()">選單 ☰</button>
+<!-- Toast Container -->
+<div id="toast-container"></div>
 
 <!-- Quiz Overlay -->
 <div id="quiz-overlay">
@@ -426,19 +444,19 @@ body{background:#E8F4FD;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 </div>
 
 <!-- Daily Challenge Panel -->
-<div id="daily-challenge-panel" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:center;padding:20px">
-  <div id="daily-challenge-card" style="background:#16213e;border-radius:16px;padding:24px;max-width:500px;width:100%;border:2px solid #FF6B35;max-height:80vh;overflow-y:auto">
+<div id="daily-challenge-panel" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(200,230,255,.88);backdrop-filter:blur(16px);flex-direction:column;align-items:center;justify-content:center;padding:20px">
+  <div id="daily-challenge-card" style="background:rgba(255,255,255,.9);backdrop-filter:blur(16px);border-radius:20px;padding:28px;max-width:420px;width:100%;border:2px solid #FF6B35;box-shadow:0 8px 32px rgba(255,107,53,.2);max-height:80vh;overflow-y:auto">
     <div style="text-align:center;margin-bottom:16px">
-      <div style="font-size:28px">🌟</div>
+      <div style="font-size:36px;margin-bottom:8px">🌟</div>
       <div style="color:#FF6B35;font-size:22px;font-weight:800">每日挑戰</div>
-      <div style="color:#888;font-size:13px">10道題目 · 5分鐘限時 · 混合主題</div>
+      <div style="color:#666;font-size:13px;margin-top:4px">10道題目 · 5分鐘限時 · 混合主題</div>
     </div>
     <div id="daily-challenge-status" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
-      <div style="background:rgba(255,255,255,.05);padding:10px;border-radius:8px;text-align:center">
-        <div style="color:#FAAD14;font-size:16px;font-weight:700" id="daily-streak-display">連續: 0 天</div>
+      <div style="background:rgba(255,107,53,.1);padding:12px;border-radius:12px;text-align:center">
+        <div style="color:#FF6B35;font-size:16px;font-weight:700" id="daily-streak-display">🔥 連續: 0 天</div>
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;flex-direction:column;gap:10px">
       <button class="menu-btn gold" onclick="startDailyChallenge()" id="daily-start-btn">🌟 開始挑戰</button>
       <button class="menu-btn" onclick="closeDailyChallenge()">關閉</button>
     </div>
@@ -446,8 +464,8 @@ body{background:#E8F4FD;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 </div>
 
 <!-- Daily Challenge Quiz Overlay -->
-<div id="daily-quiz-overlay" style="display:none;position:fixed;inset:0;background:rgba(26,26,46,.97);z-index:600;flex-direction:column;align-items:center;justify-content:center;padding:20px">
-  <div style="background:#16213e;border-radius:16px;padding:20px;max-width:500px;width:100%;border:2px solid #FF6B35;box-shadow:0 0 30px rgba(255,107,53,.3)">
+<div id="daily-quiz-overlay" style="display:none;position:fixed;inset:0;background:rgba(200,230,255,.92);backdrop-filter:blur(16px);z-index:600;flex-direction:column;align-items:center;justify-content:center;padding:20px">
+  <div style="background:rgba(255,255,255,.9);backdrop-filter:blur(16px);border-radius:20px;padding:24px;max-width:500px;width:100%;border:2px solid #FF6B35;box-shadow:0 8px 32px rgba(255,107,53,.2)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <div style="color:#FF6B35;font-size:16px;font-weight:700">🌟 每日挑戰</div>
       <div style="display:flex;gap:12px">
@@ -455,8 +473,8 @@ body{background:#E8F4FD;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
         <div id="daily-score" style="color:#FAAD14;font-size:16px;font-weight:700">✅ 0/10</div>
       </div>
     </div>
-    <div id="daily-progress" style="color:#888;font-size:13px;margin-bottom:10px">Q1/10</div>
-    <div id="daily-quiz-question" style="margin-bottom:16px;font-size:17px;color:#fff;line-height:1.6;min-height:50px;text-align:center"></div>
+    <div id="daily-progress" style="color:#666;font-size:13px;margin-bottom:10px">Q1/10</div>
+    <div id="daily-quiz-question" style="margin-bottom:16px;font-size:17px;color:#1A1A2E;line-height:1.6;min-height:50px;text-align:center"></div>
     <div class="quiz-options" id="daily-quiz-options"></div>
     <div id="daily-quiz-feedback" style="margin-top:14px;text-align:center;font-size:15px;font-weight:700;min-height:22px"></div>
     <button style="margin-top:12px;background:transparent;border:2px solid #FF6B35;color:#FF6B35;padding:8px 24px;border-radius:8px;cursor:pointer;font-size:14px" onclick="exitDailyChallenge()">退出</button>
@@ -464,12 +482,12 @@ body{background:#E8F4FD;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 </div>
 
 <!-- Daily Challenge Result Overlay -->
-<div id="daily-result-overlay" style="display:none;position:fixed;inset:0;z-index:650;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:center;padding:20px">
-  <div style="background:#16213e;border-radius:16px;padding:32px;max-width:400px;width:100%;border:2px solid #FF6B35;text-align:center">
-    <div style="font-size:48px">🌟</div>
+<div id="daily-result-overlay" style="display:none;position:fixed;inset:0;z-index:650;background:rgba(200,230,255,.88);backdrop-filter:blur(16px);flex-direction:column;align-items:center;justify-content:center;padding:20px">
+  <div style="background:rgba(255,255,255,.95);backdrop-filter:blur(16px);border-radius:24px;padding:32px;max-width:380px;width:100%;border:2px solid #FF6B35;box-shadow:0 8px 32px rgba(255,107,53,.25);text-align:center">
+    <div style="font-size:56px">🌟</div>
     <div style="color:#FF6B35;font-size:24px;font-weight:800;margin-top:8px">每日挑戰完成!</div>
     <div id="daily-result-score" style="color:#FAAD14;font-size:36px;font-weight:900;margin:16px 0">+500 XP</div>
-    <div id="daily-result-stats" style="color:#aaa;font-size:14px;margin-bottom:16px"></div>
+    <div id="daily-result-stats" style="color:#666;font-size:14px;margin-bottom:16px"></div>
     <div id="daily-result-rare" style="color:#1890FF;font-size:16px;margin-bottom:16px">✨ 稀有卡牌掉落!</div>
     <button class="menu-btn gold" onclick="closeDailyResult()">關閉</button>
   </div>
@@ -584,16 +602,9 @@ body{background:#E8F4FD;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
   </div>
 </div>
 
-<!-- Daily Login Reward Overlay -->
-<div id="login-reward-overlay" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(26,26,46,.98);flex-direction:column;align-items:center;justify-content:center;padding:20px">
-  <div style="background:linear-gradient(135deg,#1a1a2e,#16213e,#1a1a2e);border-radius:24px;padding:36px;max-width:400px;width:100%;border:4px solid #FAAD14;box-shadow:0 0 60px rgba(250,173,20,.4);text-align:center">
-    <div style="font-size:64px;margin-bottom:16px">🎁</div>
-    <div id="login-reward-title" style="color:#FAAD14;font-size:26px;font-weight:900;margin-bottom:8px">第 1 天登入！</div>
-    <div style="color:#fff;font-size:14px;margin-bottom:20px">登入獎勵</div>
-    <div id="login-reward-items" style="background:rgba(0,0,0,.3);border-radius:12px;padding:16px;margin-bottom:20px;text-align:left"></div>
-    <button onclick="closeLoginReward()" style="background:#FAAD14;border:none;color:#1A1A2E;padding:12px 32px;border-radius:8px;cursor:pointer;font-size:15px;font-weight:700">收下獎勵</button>
-  </div>
-</div>
+<!-- Daily Login Reward Overlay (DEPRECATED - now uses toast) -->
+<!-- Keeping element for backwards compat, but hidden -->
+<div id="login-reward-overlay" style="display:none"></div>
 
 <!-- Shop Overlay -->
 <div id="shop-overlay" style="display:none;position:fixed;inset:0;z-index:550;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;overflow-y:auto">
@@ -3107,18 +3118,34 @@ function showLoginReward(streak){
       if(dropped)revealCard(dropped);
     },1200);
   }
-  // Show reward UI
-  document.getElementById('login-reward-title').textContent='第 '+streak+' 天登入！';
-  const itemsEl=document.getElementById('login-reward-items');
-  let itemsHTML='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:20px">⭐</span><span style="color:#FAAD14;font-weight:700">+'+reward.xp+' XP</span></div>';
-  itemsHTML+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:20px">💰</span><span style="color:#1890FF;font-weight:700">+5 學分</span></div>';
-  if(reward.card){
-    const cardNames={common:'普通',rare:'稀有',legendary:'傳說'};
-    const cardEmojis={common:'⚪',rare:'🔵',legendary:'🟡'};
-    itemsHTML+='<div style="display:flex;align-items:center;gap:10px"><span style="font-size:20px">'+cardEmojis[reward.card]+'</span><span style="color:#FAAD14;font-weight:700">'+cardNames[reward.card]+'卡牌</span></div>';
-  }
-  itemsEl.innerHTML=itemsHTML;
-  document.getElementById('login-reward-overlay').style.display='flex';
+  // Show reward UI as toast (bottom-right, auto-dismiss after 4 seconds)
+  showToast('第 '+streak+' 天登入！', [
+    {icon:'⭐', text:'+'+reward.xp+' XP', color:'#FAAD14'},
+    {icon:'💰', text:'+5 學分', color:'#1890FF'},
+    ...(reward.card ? [{icon: {common:'⚪',rare:'🔵',legendary:'🟡'}[reward.card], text:{common:'普通',rare:'稀有',legendary:'傳說'}[reward.card]+'卡牌', color:'#FAAD14'}] : [])
+  ]);
+}
+
+// Toast system
+function showToast(title, items, duration=4000){
+  const container=document.getElementById('toast-container');
+  const toast=document.createElement('div');
+  toast.className='toast';
+  let itemsHTML='<div class="toast-title">'+title+'</div>';
+  itemsHTML+='<div class="toast-items">';
+  items.forEach(item=>{
+    const icon=typeof item.icon==='object' ? Object.values(item.icon)[0] : item.icon;
+    itemsHTML+='<div class="toast-item"><span>'+icon+'</span><span style="color:'+item.color+';font-weight:600">'+item.text+'</span></div>';
+  });
+  itemsHTML+='</div>';
+  toast.innerHTML=itemsHTML;
+  container.appendChild(toast);
+  
+  // Auto dismiss
+  setTimeout(()=>{
+    toast.classList.add('toast-out');
+    setTimeout(()=>toast.remove(), 300);
+  }, duration);
 }
 
 function closeLoginReward(){
