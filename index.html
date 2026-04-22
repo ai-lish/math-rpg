@@ -317,6 +317,7 @@ body{background:#E8F4FD;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
   <button class="menu-btn" onclick="showShop();closeMenu();">🏪 商店</button>
   <button class="menu-btn" onclick="showProfile();closeMenu();">👤 個人檔案</button>
   <button class="menu-btn" onclick="showTeacherDashboard();closeMenu();">👩‍🏫 教師面板</button>
+  <button class="menu-btn" onclick="returnToMapHub();">🗺️ 返回地圖選擇</button>
   <button class="menu-btn danger" onclick="resetGame()">重新開始</button>
   <button class="menu-btn" onclick="closeMenu()">繼續遊戲</button>
 </div>
@@ -1488,6 +1489,7 @@ function showMenu(){
   document.getElementById('menu').style.display='flex';
 }
 function closeMenu(){document.getElementById('menu').style.display='none'}
+function returnToMapHub(){closeMenu();game.scene.stop('MainScene');game.scene.start('MapHub');}
 
 function showLeaderboard(){
   document.getElementById('leaderboard-panel').style.display='flex';
@@ -1922,15 +1924,281 @@ const NPC_LABELS=[
   {x:10,y:7,text:'📉 百分法師'},
 ];
 
-class MainScene extends Phaser.Scene{
+// ============================================================
+// MAP HUB SCENE - 地圖選擇大廳
+// ============================================================
+class MapHubScene extends Phaser.Scene {
+  constructor() { super({ key: 'MapHub' }); }
+
+  create() {
+    // Dark background
+    this.add.rectangle(MAP_COLS * TILE / 2, MAP_ROWS * TILE / 2, MAP_COLS * TILE, MAP_ROWS * TILE, 0x1a1a2e);
+
+    // Title
+    this.add.text(MAP_COLS * TILE / 2, 60, '🗺️ 選擇地圖', {
+      fontSize: '32px', fontFamily: 'Segoe UI', color: '#FAAD14', fontStyle: 'bold'
+    }).setOrigin(0.5);
+
+    // Subtitle
+    this.add.text(MAP_COLS * TILE / 2, 100, '冒險即將開始', {
+      fontSize: '14px', fontFamily: 'Segoe UI', color: '#888'
+    }).setOrigin(0.5);
+
+    // Map cards configuration
+    const MAPS = [
+      { key: 'MainScene', name: '🏫 學校', desc: '探索校園，挑戰各科教室', mode: 'TOP-DOWN', color: '#4A90D9', icon: '🏫', available: true },
+      { key: 'AlgebraScene', name: '📐 代數大陸', desc: '代數冒險，即將開放', mode: 'SIDE-SCROLL', color: '#FAAD14', icon: '📐', available: false },
+    ];
+
+    const cardW = 280, cardH = 160;
+    const startX = (MAP_COLS * TILE - MAPS.length * (cardW + 24)) / 2 + cardW / 2;
+
+    MAPS.forEach((map, i) => {
+      const cx = startX + i * (cardW + 24);
+      const cy = MAP_ROWS * TILE / 2;
+
+      // Card background
+      const card = this.add.rectangle(cx, cy, cardW, cardH, parseInt(map.color.replace('#', ''), 16), 0.85);
+      card.setStrokeStyle(3, parseInt(map.color.replace('#', ''), 16));
+      card.setInteractive({ useHandCursor: true });
+
+      // Card icon
+      this.add.text(cx, cy - 45, map.icon, { fontSize: '40px' }).setOrigin(0.5);
+
+      // Card name
+      this.add.text(cx, cy + 5, map.name, {
+        fontSize: '20px', fontFamily: 'Segoe UI', color: '#fff', fontStyle: 'bold'
+      }).setOrigin(0.5);
+
+      // Card desc
+      this.add.text(cx, cy + 35, map.desc, {
+        fontSize: '12px', fontFamily: 'Segoe UI', color: '#aaa'
+      }).setOrigin(0.5);
+
+      // Mode badge
+      const badge = this.add.text(cx, cy + 65, map.mode, {
+        fontSize: '11px', fontFamily: 'Segoe UI', color: map.color,
+        backgroundColor: 'rgba(0,0,0,0.4)', padding: { x: 8, y: 3 }
+      }).setOrigin(0.5);
+
+      // Lock overlay for unavailable maps
+      if (!map.available) {
+        this.add.rectangle(cx, cy, cardW, cardH, 0x000000, 0.5).setStrokeStyle(1, 0x666);
+        this.add.text(cx, cy + 75, '🔒 即將開放', {
+          fontSize: '13px', fontFamily: 'Segoe UI', color: '#888'
+        }).setOrigin(0.5);
+        card.removeInteractive();
+      } else {
+        // Click handler
+        card.on('pointerover', () => card.setStrokeStyle(4, 0xffffff));
+        card.on('pointerout', () => card.setStrokeStyle(3, parseInt(map.color.replace('#', ''), 16)));
+        card.on('pointerdown', () => {
+          card.setFillStyle(parseInt(map.color.replace('#', ''), 16), 1);
+          this.time.delayedCall(150, () => {
+            if (map.key === 'MainScene') {
+              this.scene.start('MainScene');
+            } else if (map.key === 'AlgebraScene') {
+              this.scene.start('AlgebraScene');
+            }
+          });
+        });
+      }
+    });
+
+    // Version hint
+    this.add.text(MAP_COLS * TILE / 2, MAP_ROWS * TILE - 30, 'Math RPG v1.0', {
+      fontSize: '11px', fontFamily: 'Segoe UI', color: '#555'
+    }).setOrigin(0.5);
+  }
+}
+
+// ============================================================
+// ALGEBRA SCENE - 代數大陸 (Side-scroll, Phase 2)
+// ============================================================
+class AlgebraScene extends Phaser.Scene {
+  constructor() { super({ key: 'AlgebraScene' }); this.player = null; this.platforms = null; }
+
+  preload() { this.createTextures(); }
+
+  create() {
+    // Side-scroll world: 24 tiles wide, 12 tiles tall
+    const WORLD_W = 24 * TILE, WORLD_H = 12 * TILE;
+    this.physics.world.setBounds(0, 0, WORLD_W, WORLD_H);
+
+    // Background
+    this.add.rectangle(WORLD_W / 2, WORLD_H / 2, WORLD_W, WORLD_H, 0x16213e);
+
+    // Platforms
+    this.platforms = this.physics.add.staticGroup();
+
+    // Ground layer (y = 10)
+    for (let x = 0; x < 24; x++) {
+      this.addPlatform(x * TILE + TILE / 2, 10 * TILE + TILE / 2, 'floor_side');
+    }
+    // Ceiling layer (y = 1)
+    for (let x = 0; x < 24; x++) {
+      this.addPlatform(x * TILE + TILE / 2, 1 * TILE + TILE / 2, 'ceiling');
+    }
+    // Left wall
+    this.addPlatform(TILE / 2, 6 * TILE + TILE / 2, 'wall_side');
+    // Right wall
+    this.addPlatform(23 * TILE + TILE / 2, 6 * TILE + TILE / 2, 'wall_side');
+
+    // Intermediate platforms (Layer 2 at y=4, Layer 3 at y=7)
+    for (let x = 2; x < 22; x++) {
+      if (x < 6 || x > 8) this.addPlatform(x * TILE + TILE / 2, 4 * TILE + TILE / 2, 'floor_side');
+    }
+    for (let x = 2; x < 22; x++) {
+      if (x < 13 || x > 16) this.addPlatform(x * TILE + TILE / 2, 7 * TILE + TILE / 2, 'floor_side');
+    }
+
+    // Stairs connecting layers
+    // Stair from ground (y=10) to layer 2 (y=4): x=5-8
+    for (let s = 0; s < 4; s++) {
+      this.addPlatform((5 + s) * TILE + TILE / 2, (10 - s * 2) * TILE + TILE / 2, 'stair');
+    }
+    // Stair from layer 2 (y=4) to layer 3 (y=7): x=14-17
+    for (let s = 0; s < 4; s++) {
+      this.addPlatform((14 + s) * TILE + TILE / 2, (4 + s * 1) * TILE + TILE / 2, 'stair');
+    }
+
+    // Player spawn
+    const avatarKey = 'avatar' + gameState.selectedAvatar;
+    if (!this.textures.exists(avatarKey)) {
+      // Fallback to player sprite
+      this.player = this.physics.add.sprite(8 * TILE + 24, 9 * TILE, 'player_side_idle');
+    } else {
+      this.player = this.physics.add.sprite(8 * TILE + 24, 9 * TILE, avatarKey);
+    }
+    this.player.setCollideWorldBounds(true);
+    this.physics.add.collider(this.player, this.platforms);
+
+    // Controls
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.wasd = this.input.keyboard.addKeys('W,A,S,D');
+    this.jumpCount = 0;
+
+    // Camera
+    this.cameras.main.setBounds(0, 0, WORLD_W, WORLD_H);
+    this.cameras.main.startFollow(this.player, true, 0.8, 0.8);
+
+    // HUD - Back button
+    this.add.text(16, 16, '← 返回', {
+      fontSize: '14px', color: '#4A90D9', backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 8, y: 4 }
+    }).setInteractive({ useHandCursor: true }).on('pointerdown', () => this.scene.start('MapHub'));
+
+    // Map label
+    this.add.text(24 * TILE / 2, 2 * TILE, '📐 代數大陸', {
+      fontSize: '16px', color: '#FAAD14', fontStyle: 'bold',
+      backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 12, y: 6 }
+    }).setOrigin(0.5);
+  }
+
+  addPlatform(x, y, textureKey) {
+    const s = this.add.sprite(x, y, textureKey);
+    this.platforms.add(s);
+  }
+
+  createTextures() {
+    const mk = (key, w, h, draw) => {
+      const g = this.make.graphics({ add: false }); draw(g); g.generateTexture(key, w, h); g.destroy();
+    };
+    mk('ceiling', TILE, TILE, g => {
+      g.fillStyle(0x6B7280); g.fillRect(0, 0, TILE, TILE);
+      g.fillStyle(0x9CA3AF); g.fillRect(0, 0, TILE, 3);
+      g.fillStyle(0x4B5563); g.fillRect(TILE / 2 - 1, 0, 2, TILE);
+    });
+    mk('wall_side', TILE, TILE, g => {
+      g.fillStyle(0x9CA3AF); g.fillRect(0, 0, TILE, TILE);
+      g.fillStyle(0xB0B8C4); g.fillRect(2, 0, TILE - 4, TILE / 3);
+      g.fillStyle(0x8B95A3); g.fillRect(2, TILE / 3, TILE - 4, TILE / 3);
+      g.fillStyle(0x6B7280); g.fillRect(2, TILE * 2 / 3, TILE - 4, TILE / 3);
+    });
+    mk('floor_side', TILE, TILE, g => {
+      g.fillStyle(0xD4B896); g.fillRect(0, 0, TILE, TILE);
+      g.fillStyle(0xC4AA88); g.fillRect(0, 0, TILE, 3);
+      g.fillStyle(0xE0CAA8); g.fillRect(0, 3, TILE, TILE - 6);
+      g.fillStyle(0xD0B896); g.fillRect(0, TILE - 3, TILE, 3);
+    });
+    mk('stair', TILE, TILE, g => {
+      g.fillStyle(0xB8860B); g.fillRect(0, 0, TILE, TILE);
+      g.fillStyle(0xD4A017); g.fillRect(2, TILE - 10, TILE - 4, 8);
+      g.fillStyle(0x996600); g.fillRect(2, TILE - 10, 2, 8);
+      g.fillStyle(0xB8860B); g.fillRect(2, TILE - 20, TILE - 4, 8);
+      g.fillStyle(0x996600); g.fillRect(2, TILE - 20, 2, 8);
+      g.fillStyle(0xB8860B); g.fillRect(2, TILE - 30, TILE - 4, 8);
+      g.fillStyle(0x996600); g.fillRect(2, TILE - 30, 2, 8);
+    });
+    mk('player_side_idle', 24, 32, g => {
+      g.fillStyle(0xFFD4A8); g.fillRect(7, 0, 10, 10); g.fillRect(6, 1, 12, 8);
+      g.fillStyle(0x333333); g.fillRect(9, 3, 3, 3); g.fillRect(13, 3, 3, 3);
+      g.fillStyle(0x333333); g.fillRect(10, 5, 2, 2); g.fillRect(14, 5, 2, 2);
+      g.fillStyle(0x87CEEB); g.fillRect(6, 10, 12, 10); g.fillStyle(0xADD8E6); g.fillRect(8, 10, 8, 4);
+      g.fillStyle(0x3D5A80); g.fillRect(6, 20, 5, 10); g.fillRect(13, 20, 5, 10);
+      g.fillStyle(0x5D4E37); g.fillRect(6, 28, 5, 4); g.fillRect(13, 28, 5, 4);
+    });
+    // Avatar variants (same as MainScene, needed if entering AlgebraScene first)
+    const av = (key, skinColor, shirtColor, pantsColor, hairColor, hairStyle) => {
+      const g = this.make.graphics({ add: false });
+      if (hairStyle === 'short') {
+        g.fillStyle(hairColor); g.fillRect(7, 0, 10, 3); g.fillRect(6, 2, 12, 2);
+        g.fillStyle(skinColor); g.fillRect(7, 3, 10, 8); g.fillRect(6, 4, 12, 6);
+      } else if (hairStyle === 'long') {
+        g.fillStyle(hairColor); g.fillRect(7, 0, 10, 3); g.fillRect(5, -2, 14, 6);
+        g.fillStyle(skinColor); g.fillRect(7, 3, 10, 8); g.fillRect(6, 4, 12, 6);
+      } else if (hairStyle === 'curly') {
+        g.fillStyle(hairColor); g.fillCircle(7, 2, 3); g.fillCircle(11, 2, 3); g.fillCircle(15, 2, 3);
+        g.fillStyle(skinColor); g.fillRect(7, 3, 10, 8); g.fillRect(6, 4, 12, 6);
+      } else {
+        g.fillStyle(hairColor); g.fillRect(7, 0, 10, 4);
+        g.fillStyle(skinColor); g.fillRect(7, 3, 10, 8); g.fillRect(6, 4, 12, 6);
+      }
+      g.fillStyle(0x333333); g.fillRect(9, 5, 3, 3); g.fillRect(13, 5, 3, 3);
+      g.fillStyle(shirtColor); g.fillRect(6, 11, 12, 10);
+      g.fillStyle(pantsColor); g.fillRect(6, 21, 5, 10); g.fillRect(13, 21, 5, 10);
+      g.fillStyle(0x5D4E37); g.fillRect(6, 29, 5, 3); g.fillRect(13, 29, 5, 3);
+      g.generateTexture(key, 24, 32); g.destroy();
+    };
+    av('avatar1', 0xFFD4A8, 0x87CEEB, 0x3D5A80, 0x4A3728, 'short');
+    av('avatar2', 0xD4A574, 0x52C41A, 0x2D5A30, 0x1A1A1A, 'curly');
+    av('avatar3', 0xFFE4C4, 0xF7B2D3, 0x8B4572, 0x8B4513, 'long');
+    av('avatar4', 0xFFD4A8, 0xFF8C00, 0x3D5A80, 0x2F1B0F, 'short');
+  }
+
+  update() {
+    const speed = 160;
+    let vx = 0;
+    if (this.cursors.left.isDown || this.wasd.A.isDown) vx = -1;
+    else if (this.cursors.right.isDown || this.wasd.D.isDown) vx = 1;
+    this.player.setVelocityX(vx * speed);
+
+    const isOnGround = this.player.body.blocked.down || this.player.body.touching.down;
+    if (isOnGround) this.jumpCount = 0;
+    const jumpPressed = Phaser.Input.Keyboard.JustDown(this.cursors.up) ||
+      Phaser.Input.Keyboard.JustDown(this.wasd.W) || Phaser.Input.Keyboard.JustDown(this.cursors.space);
+    if (jumpPressed && this.jumpCount < 2) { this.player.setVelocityY(-380); this.jumpCount++; }
+
+    if ((this.cursors.down.isDown || this.wasd.S.isDown) && !isOnGround) this.player.setVelocityY(200);
+
+    const isMoving = vx !== 0;
+    if (isMoving) {
+      this.player.setTexture('player_side_idle');
+      this.player.setFlipX(vx < 0);
+    } else if (!isOnGround) {
+      this.player.setTexture('player_side_idle');
+    } else {
+      this.player.setTexture('player_side_idle');
+    }
+  }
+}
+
   constructor(){super({key:'Main'});this.player=null;this.cursors=null;this.joystick={x:0,y:0};this.lastTile=null;this.lastRoom=null;}
 
-  preload(){this.createPixelTextures();}
+  preload(){this.createPixelTextures();this.createCharacterVariants();}
 
   create(){
     this.physics.world.setBounds(0,0,MAP_COLS*TILE,MAP_ROWS*TILE);
     this.drawMap();
-    this.createCharacterVariants();
     const avatarKey='avatar'+gameState.selectedAvatar;
     this.player=this.physics.add.sprite(8*TILE+24,10*TILE+24,avatarKey);
     this.player.setCollideWorldBounds(true);
@@ -3013,7 +3281,7 @@ const game=new Phaser.Game({
   height:MAP_ROWS*TILE,
   pixelArt:true,
   physics:{default:'arcade',arcade:{gravity:{y:0},debug:false}},
-  scene:MainScene,
+  scene:[MapHubScene, MainScene, AlgebraScene],
   scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   backgroundColor:'#1A1A2E'
 });
