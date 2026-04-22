@@ -13,12 +13,12 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-action:none}
+body{background:#E8F4FD;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-action:none}
 #game-container{width:100vw;height:100vh;display:block}
 
 /* ===== HUD ===== */
-#hud{position:fixed;top:0;left:0;right:56px;padding:10px 15px;display:flex;gap:12px;z-index:100;pointer-events:none;flex-wrap:wrap}
-.hud-item{display:flex;align-items:center;gap:6px;color:#fff;font-size:14px;font-weight:600}
+#hud{position:fixed;top:0;left:0;right:56px;padding:10px 15px;display:flex;gap:14px;z-index:100;pointer-events:none;flex-wrap:wrap;background:rgba(255,255,255,.75);backdrop-filter:blur(16px);border-radius:0 0 16px 0;border-bottom:1px solid rgba(255,255,255,.3);box-shadow:0 2px 12px rgba(0,0,0,.1)}
+.hud-item{display:flex;align-items:center;gap:6px;color:#1A1A2E;font-size:14px;font-weight:600}
 .hud-bar{width:80px;height:10px;background:#2d2d4a;border-radius:5px;overflow:hidden}
 .hud-fill{height:100%;border-radius:5px;transition:width .3s}
 #hp-bar{background:linear-gradient(90deg,#F5222D,#FF6B6B)}
@@ -30,47 +30,47 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 /* ===== TOP-RIGHT AUTH ===== */
 #auth-area{position:fixed;top:8px;right:8px;z-index:120;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
 #user-info{display:none;flex-direction:column;align-items:flex-end;gap:2px}
-#user-name{color:#fff;font-size:12px;font-weight:600}
+#user-name{color:#1A1A2E;font-size:12px;font-weight:600}
 #user-level{color:#FAAD14;font-size:11px}
-#login-btn{background:#4A90D9;border:none;color:#fff;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600}
+#login-btn{background:linear-gradient(135deg,#4A90D9,#357ABD);border:none;color:#fff;padding:9px 16px;border-radius:12px;cursor:pointer;font-size:13px;font-weight:600;box-shadow:0 4px 12px rgba(74,144,217,.3)}
 #login-btn:hover{background:#357ABD}
 #logout-btn{display:none;background:transparent;border:1px solid #F5222D;color:#F5222D;padding:5px 12px;border-radius:8px;cursor:pointer;font-size:12px}
 #logout-btn:hover{background:#F5222D;color:#fff}
 #leaderboard-btn{background:#FAAD14;border:none;color:#1A1A2E;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700}
 
 /* ===== MENU BUTTON ===== */
-#menu-btn{position:fixed;top:10px;right:160px;z-index:110;background:#4A90D9;border:none;color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px}
+#menu-btn{position:fixed;top:10px;right:160px;z-index:110;background:linear-gradient(135deg,#4A90D9,#357ABD);border:none;color:#fff;padding:10px 16px;border-radius:12px;cursor:pointer;font-size:13px;font-weight:600;box-shadow:0 4px 12px rgba(74,144,217,.3)}
 
 /* ===== QUIZ OVERLAY ===== */
-#quiz-overlay{display:none;position:fixed;inset:0;background:rgba(26,26,46,.97);z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:20px}
-#quiz-card{background:#16213e;border-radius:16px;padding:24px;max-width:500px;width:100%;border:2px solid #4A90D9;box-shadow:0 0 30px rgba(74,144,217,.3)}
+#quiz-overlay{display:none;position:fixed;inset:0;background:rgba(200,230,255,.92);z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+#quiz-card{background:rgba(255,255,255,.85);backdrop-filter:blur(16px);border-radius:20px;padding:28px;max-width:520px;width:100%;border:1px solid rgba(74,144,217,.3);box-shadow:0 8px 32px rgba(74,144,217,.2),0 2px 8px rgba(0,0,0,.1)}
 #quiz-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 #quiz-topic{color:#4A90D9;font-size:13px;text-transform:uppercase;letter-spacing:1px}
 #quiz-meta{color:#888;font-size:12px;display:flex;gap:8px}
 #quiz-streak{color:#FF6B35;font-weight:700}
-#quiz-question{margin-bottom:16px;font-size:17px;color:#fff;line-height:1.8;min-height:80px;max-height:150px;overflow-y:auto;padding:8px}
+#quiz-question{margin-bottom:16px;font-size:18px;color:#1A1A2E;line-height:1.8;min-height:80px;max-height:150px;overflow-y:auto;padding:8px;font-weight:500}
 #quiz-question .katex,#quiz-question .katex *{font-size:1em}
 #quiz-question .katex{display:inline;vertical-align:middle}
 .quiz-option .katex{font-size:1em;vertical-align:middle}
 .quiz-option .katex *{font-size:inherit}
 .quiz-options{display:flex;flex-direction:column;gap:8px}
-.quiz-option{background:#1f2d4a;border:2px solid #2d4a6a;border-radius:10px;padding:12px 16px;color:#fff;font-size:15px;cursor:pointer;transition:all .2s;text-align:left}
-.quiz-option:hover,.quiz-option:active{border-color:#4A90D9;background:#2d4a6a}
-.quiz-option.correct{border-color:#52C41A;background:rgba(82,196,26,.2)}
-.quiz-option.wrong{border-color:#F5222D;background:rgba(245,34,45,.2)}
+.quiz-option{background:rgba(255,255,255,.8);backdrop-filter:blur(8px);border:2px solid rgba(74,144,217,.25);border-radius:14px;padding:14px 18px;color:#1A1A2E;font-size:15px;cursor:pointer;transition:all .2s;text-align:left;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.quiz-option:hover,.quiz-option:active{border-color:#4A90D9;background:rgba(74,144,217,.1);box-shadow:0 4px 12px rgba(74,144,217,.2)}
+.quiz-option.correct{border-color:#52C41A;background:rgba(82,196,26,.15)}
+.quiz-option.wrong{border-color:#F5222D;background:rgba(245,34,45,.15)}
 .quiz-option.disabled{opacity:.5;cursor:not-allowed}
 #quiz-feedback{margin-top:14px;text-align:center;font-size:15px;font-weight:700;min-height:22px}
-#quiz-feedback.correct{color:#52C41A}
-#quiz-feedback.wrong{color:#F5222D}
-#quiz-exit{margin-top:14px;background:transparent;border:2px solid #4A90D9;color:#4A90D9;padding:8px 24px;border-radius:8px;cursor:pointer;font-size:14px}
+#quiz-feedback.correct{color:#2D7D2D}
+#quiz-feedback.wrong{color:#C9362D}
+#quiz-exit{margin-top:14px;background:linear-gradient(135deg,#4A90D9,#357ABD);border:none;color:#fff;padding:10px 28px;border-radius:12px;cursor:pointer;font-size:14px;font-weight:600;box-shadow:0 4px 12px rgba(74,144,217,.25)}
 #quiz-exit:hover{background:#4A90D9;color:#fff}
 #quiz-nav{margin-top:8px;display:flex;justify-content:center;gap:8px}
-.quiz-nav-btn{background:#2d4a6a;border:none;color:#fff;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px}
+.quiz-nav-btn{background:linear-gradient(135deg,rgba(74,144,217,.8),rgba(53,122,189,.8));border:none;color:#fff;padding:7px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600}
 .quiz-nav-btn:hover{background:#3d5a7a}
 
 /* ===== LEVEL UP ===== */
 #achievement-overlay.active{display:flex}
-#achievement-overlay{display:none;position:fixed;inset:0;z-index:250;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;overflow-y:auto}
+#achievement-overlay{display:none;position:fixed;inset:0;z-index:250;background:rgba(200,230,255,.88);backdrop-filter:blur(16px);flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;overflow-y:auto}
 #achievement-toast.show{top:20px}
 #achievement-toast .ach-icon{font-size:28px}
 #achievement-toast .ach-name{font-weight:700;color:#FAAD14}
@@ -82,29 +82,29 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 .level-up-sub{font-size:20px;color:#fff;margin-top:10px}
 
 /* ===== CARD SYSTEM ===== */
-#card-overlay{display:none;position:fixed;inset:0;z-index:250;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;overflow-y:auto}
+#card-overlay{display:none;position:fixed;inset:0;z-index:250;background:rgba(200,230,255,.88);backdrop-filter:blur(16px);flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;overflow-y:auto}
 #card-overlay.active{display:flex}
 #card-collection-header{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:500px;margin-bottom:16px}
 #card-collection-title{color:#fff;font-size:20px;font-weight:700}
-#card-close-btn{background:#4A90D9;border:none;color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer}
+#card-close-btn{background:linear-gradient(135deg,#4A90D9,#357ABD);border:none;color:#fff;padding:10px 20px;border-radius:12px;cursor:pointer;font-size:14px;font-weight:600;box-shadow:0 4px 12px rgba(74,144,217,.3)}
 #card-stats-bar{display:flex;gap:16px;margin-bottom:12px;font-size:13px;color:#aaa}
 #card-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:100%;max-width:500px;max-height:calc(100vh - 160px);overflow-y:auto}
-.card-cell{aspect-ratio:3/4;background:#16213e;border-radius:8px;border:2px solid #2d4a6a;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s,border-color .15s;position:relative;overflow:hidden}
-.card-cell:hover{transform:scale(1.05)}
+.card-cell{aspect-ratio:3/4;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);border-radius:12px;border:2px solid rgba(100,120,150,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.card-cell:hover{transform:scale(1.07);box-shadow:0 6px 20px rgba(74,144,217,.25)}
 .card-cell.owned{border-color:#4A90D9}
-.card-cell.locked{filter:grayscale(1);opacity:.4}
-.card-cell.common-glow{box-shadow:0 0 8px rgba(255,255,255,.3)}
-.card-cell.rare-glow{box-shadow:0 0 12px rgba(24,144,255,.6)}
-.card-cell.legendary-glow{box-shadow:0 0 20px rgba(250,173,20,.8);animation:glow-pulse 1.5s infinite}
+.card-cell.locked{filter:grayscale(1);opacity:.35}
+.card-cell.common-glow{box-shadow:0 0 10px rgba(180,180,180,.4)}
+.card-cell.rare-glow{box-shadow:0 0 14px rgba(24,144,255,.6)}
+.card-cell.legendary-glow{box-shadow:0 0 22px rgba(250,173,20,.8);animation:glow-pulse 1.5s infinite}
 @keyframes glow-pulse{0%,100%{box-shadow:0 0 20px rgba(250,173,20,.8)}50%{box-shadow:0 0 35px rgba(250,173,20,1)}}
 .card-cell .card-icon{font-size:22px}
-.card-cell .card-name{font-size:8px;color:#fff;text-align:center;padding:2px;line-height:1.2}
+.card-cell .card-name{font-size:9px;color:#1A1A2E;text-align:center;padding:2px;line-height:1.2;font-weight:500}
 .card-cell .card-rarity{position:absolute;top:2px;right:3px;font-size:8px;font-weight:700}
 .card-rarity.common{color:#aaa}.card-rarity.rare{color:#1890FF}.card-rarity.legendary{color:#FAAD14}
 
 /* Achievement styles */
-#achievement-grid .ach-cell{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(250,173,20,.2);cursor:default}
-#achievement-grid .ach-cell.unlocked{background:linear-gradient(135deg,rgba(250,173,20,.15),rgba(250,173,20,.05));border-color:#FAAD14}
+#achievement-grid .ach-cell{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:rgba(255,255,255,.7);border:1px solid rgba(250,173,20,.2);cursor:default}
+#achievement-grid .ach-cell.unlocked{background:linear-gradient(135deg,rgba(250,173,20,.12),rgba(255,255,255,.85));border-color:#FAAD14}
 #achievement-grid .ach-cell:not(.unlocked){opacity:.5}
 #achievement-grid .ach-icon{font-size:24px;min-width:36px;text-align:center}
 #achievement-grid .ach-name{font-size:13px;font-weight:700;color:#FAAD14}
@@ -140,19 +140,19 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 #joystick-knob{width:56px;height:56px;background:rgba(74,144,217,.7);border-radius:50%;opacity:.9;transition:transform .08s;box-shadow:0 0 12px rgba(74,144,217,.5)}
 
 /* ===== MENU OVERLAY ===== */
-#menu{display:none;position:fixed;inset:0;z-index:400;background:rgba(26,26,46,.96);flex-direction:column;align-items:center;justify-content:center;gap:14px}
-.menu-title{color:#fff;font-size:22px;font-weight:700;margin-bottom:6px}
-.menu-subtitle{color:#888;font-size:13px;margin-bottom:8px}
-.menu-btn{background:#4A90D9;border:none;color:#fff;padding:12px 36px;border-radius:8px;cursor:pointer;font-size:15px;font-weight:600;min-width:200px}
-.menu-btn:hover{background:#357ABD}
-.menu-btn.danger{background:#F5222D}
-.menu-btn.danger:hover{background:#D91B1B}
-.menu-btn.gold{background:#FAAD14;color:#1A1A2E}
-.menu-btn.gold:hover{background:#E59B00}
+#menu{display:none;position:fixed;inset:0;z-index:400;background:rgba(200,230,255,.88);backdrop-filter:blur(20px);flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.menu-title{color:#1A1A2E;font-size:24px;font-weight:700;margin-bottom:6px}
+.menu-subtitle{color:#555;font-size:13px;margin-bottom:8px}
+.menu-btn{background:linear-gradient(135deg,#4A90D9,#357ABD);border:none;color:#fff;padding:14px 40px;border-radius:14px;cursor:pointer;font-size:15px;font-weight:600;min-width:200px;box-shadow:0 4px 16px rgba(74,144,217,.3)}
+.menu-btn:hover{background:linear-gradient(135deg,#357ABD,#2D6AA6)}
+.menu-btn.danger{background:linear-gradient(135deg,#F5222D,#D91B1B)}
+.menu-btn.danger:hover{background:linear-gradient(135deg,#D91B1B,#C01616)}
+.menu-btn.gold{background:linear-gradient(135deg,#FAAD14,#E59B00);color:#1A1A2E}
+.menu-btn.gold:hover{background:linear-gradient(135deg,#E59B00,#CC8800)}
 
 /* ===== LEADERBOARD PANEL ===== */
-#leaderboard-panel{display:none;position:fixed;inset:0;z-index:500;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:center;padding:20px}
-#leaderboard-card{background:#16213e;border-radius:16px;padding:24px;max-width:420px;width:100%;border:2px solid #FAAD14;max-height:80vh;overflow-y:auto}
+#leaderboard-panel{display:none;position:fixed;inset:0;z-index:500;background:rgba(200,230,255,.85);backdrop-filter:blur(16px);flex-direction:column;align-items:center;justify-content:center;padding:20px}
+#leaderboard-card{background:rgba(255,255,255,.9);border-radius:20px;padding:28px;max-width:440px;width:100%;border:1px solid rgba(250,173,20,.4);max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.12)}
 .lb-title{color:#FAAD14;font-size:20px;font-weight:800;text-align:center;margin-bottom:16px}
 .lb-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;margin-bottom:6px}
 .lb-row:nth-child(even){background:rgba(255,255,255,.03)}
@@ -160,16 +160,16 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 .lb-rank.gold{color:#FFD700}
 .lb-rank.silver{color:#C0C0C0}
 .lb-rank.bronze{color:#CD7F32}
-.lb-name{flex:1;color:#fff;font-size:14px}
+.lb-name{flex:1;color:#1A1A2E;font-size:14px;font-weight:500}
 .lb-level{color:#4A90D9;font-size:13px;font-weight:600}
 .lb-xp{color:#FAAD14;font-size:12px}
 .lb-close{margin-top:16px;background:#FAAD14;border:none;color:#1A1A2E;padding:10px 32px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700}
 
 /* ===== DAILY TASKS PANEL ===== */
-#daily-tasks-panel{display:none;position:fixed;inset:0;z-index:500;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:center;padding:20px}
-#tasks-card{background:#16213e;border-radius:16px;padding:24px;max-width:400px;width:100%;border:2px solid #52C41A}
+#daily-tasks-panel{display:none;position:fixed;inset:0;z-index:500;background:rgba(200,230,255,.85);backdrop-filter:blur(16px);flex-direction:column;align-items:center;justify-content:center;padding:20px}
+#tasks-card{background:rgba(255,255,255,.9);border-radius:20px;padding:28px;max-width:420px;width:100%;border:1px solid rgba(82,196,26,.4);box-shadow:0 8px 32px rgba(0,0,0,.12)}
 .tasks-title{color:#52C41A;font-size:20px;font-weight:800;text-align:center;margin-bottom:16px}
-.task-row{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,.03);border-radius:8px;margin-bottom:8px}
+.task-row{display:flex;align-items:center;gap:12px;padding:14px;background:rgba(255,255,255,.7);border-radius:12px;margin-bottom:8px}
 .task-icon{font-size:24px}
 .task-info{flex:1}
 .task-name{color:#fff;font-size:14px;font-weight:600}
@@ -476,33 +476,43 @@ body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 </div>
 
 <!-- Profile Panel -->
-<div id="profile-panel" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(26,26,46,.97);flex-direction:column;align-items:center;justify-content:center;padding:20px">
-  <div style="background:#16213e;border-radius:16px;padding:24px;max-width:400px;width:100%;border:2px solid #4A90D9">
+<div id="profile-panel" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(200,230,255,.88);backdrop-filter:blur(16px);flex-direction:column;align-items:center;justify-content:center;padding:20px">
+  <div style="background:rgba(255,255,255,.9);border-radius:20px;padding:24px;max-width:400px;width:100%;border:1px solid rgba(74,144,217,.3);box-shadow:0 8px 32px rgba(0,0,0,.12)">
     <div style="text-align:center;margin-bottom:20px">
       <div style="font-size:40px">👤</div>
-      <div id="profile-name" style="color:#fff;font-size:20px;font-weight:700;margin-top:8px">Player</div>
-      <div id="profile-level" style="color:#FAAD14;font-size:16px;font-weight:600">Lv.1</div>
+      <div id="profile-name" style="color:#1A1A2E;font-size:20px;font-weight:700;margin-top:8px">Player</div>
+      <div id="profile-level" style="color:#4A90D9;font-size:16px;font-weight:600">Lv.1</div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
-      <div style="background:rgba(255,255,255,.05);padding:12px;border-radius:8px;text-align:center">
-        <div style="color:#FAAD14;font-size:20px;font-weight:800" id="profile-xp">0</div>
-        <div style="color:#888;font-size:12px">總經驗值</div>
+      <div style="background:rgba(255,255,255,.7);padding:12px;border-radius:12px;text-align:center">
+        <div style="color:#4A90D9;font-size:20px;font-weight:800" id="profile-xp">0</div>
+        <div style="color:#555;font-size:12px">總經驗值</div>
       </div>
-      <div style="background:rgba(255,255,255,.05);padding:12px;border-radius:8px;text-align:center">
+      <div style="background:rgba(255,255,255,.7);padding:12px;border-radius:12px;text-align:center">
         <div style="color:#52C41A;font-size:20px;font-weight:800" id="profile-correct">0</div>
-        <div style="color:#888;font-size:12px">正確答題</div>
+        <div style="color:#555;font-size:12px">正確答題</div>
       </div>
-      <div style="background:rgba(255,255,255,.05);padding:12px;border-radius:8px;text-align:center">
+      <div style="background:rgba(255,255,255,.7);padding:12px;border-radius:12px;text-align:center">
         <div style="color:#4A90D9;font-size:20px;font-weight:800" id="profile-cards">0</div>
-        <div style="color:#888;font-size:12px">卡牌</div>
+        <div style="color:#555;font-size:12px">卡牌</div>
       </div>
-      <div style="background:rgba(255,255,255,.05);padding:12px;border-radius:8px;text-align:center">
+      <div style="background:rgba(255,255,255,.7);padding:12px;border-radius:12px;text-align:center">
         <div style="color:#722ED1;font-size:20px;font-weight:800" id="profile-friends">0</div>
-        <div style="color:#888;font-size:12px">好友</div>
+        <div style="color:#555;font-size:12px">好友</div>
+      </div>
+    </div>
+    <!-- P5: Avatar Selection -->
+    <div style="margin-bottom:16px">
+      <div style="color:#555;font-size:13px;margin-bottom:8px;font-weight:600">🎭 角色造型</div>
+      <div id="avatar-selector" style="display:flex;gap:10px;justify-content:center">
+        <div class="avatar-option" data-av="1" onclick="selectAvatar(1)" style="width:48px;height:64px;background:rgba(255,255,255,.5);border-radius:10px;border:2px solid #ccc;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;position:relative"><canvas id="av-preview-1" width="24" height="32"></canvas><div style="font-size:8px;color:#555;margin-top:2px">藍衣</div></div>
+        <div class="avatar-option" data-av="2" onclick="selectAvatar(2)" style="width:48px;height:64px;background:rgba(255,255,255,.5);border-radius:10px;border:2px solid #ccc;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;position:relative"><canvas id="av-preview-2" width="24" height="32"></canvas><div style="font-size:8px;color:#555;margin-top:2px">綠衣</div></div>
+        <div class="avatar-option" data-av="3" onclick="selectAvatar(3)" style="width:48px;height:64px;background:rgba(255,255,255,.5);border-radius:10px;border:2px solid #ccc;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;position:relative"><canvas id="av-preview-3" width="24" height="32"></canvas><div style="font-size:8px;color:#555;margin-top:2px">粉衣</div></div>
+        <div class="avatar-option" data-av="4" onclick="selectAvatar(4)" style="width:48px;height:64px;background:rgba(255,255,255,.5);border-radius:10px;border:2px solid #ccc;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;position:relative"><canvas id="av-preview-4" width="24" height="32"></canvas><div style="font-size:8px;color:#555;margin-top:2px">橙衣</div></div>
       </div>
     </div>
     <div style="margin-bottom:16px">
-      <div style="color:#888;font-size:13px;margin-bottom:6px">你的邀請碼</div>
+      <div style="color:#555;font-size:13px;margin-bottom:6px">你的邀請碼</div>
       <div style="display:flex;gap:8px;align-items:center">
         <div id="profile-friend-code" style="flex:1;background:rgba(255,255,255,.05);padding:10px 14px;border-radius:8px;color:#FAAD14;font-size:18px;font-weight:700;text-align:center;letter-spacing:2px"></div>
         <button onclick="copyFriendCode()" style="background:#4A90D9;border:none;color:#fff;padding:10px 14px;border-radius:8px;cursor:pointer;font-size:14px">複製</button>
@@ -1133,6 +1143,8 @@ let gameState = {
   credits:0,
   // Phase 5 - Tutorial
   tutorialDone:false,
+  // P5 - Selected avatar (1-4)
+  selectedAvatar:1,
 };
 let dailyTasksState = {
   tasks:[
@@ -1863,30 +1875,30 @@ function sfxLegendary(){try{playTone(440,.1,'sine',.2);setTimeout(()=>playTone(5
 // ============================================================
 // PHASER GAME
 // ============================================================
-const COLORS={floor:'#2d2d4a',wall:'#4a4a6a',entrance:'#3d5a3d',classroom:'#4A90D9',door:'#8B6914'};
+const COLORS={floor:'#D4BC8E',wall:'#9CA3AF',entrance:'#6EE7B7',classroom:'#93C5FD',door:'#B8860B'};
 const ROOMS=[
   // 1st floor - 左翼
-  {id:'alg',name:'代數房',topic:'代數',tileX:1,tileY:2,w:3,h:2,color:'#4A90D9'},
-  {id:'geo',name:'幾何房',topic:'幾何',tileX:5,tileY:2,w:3,h:2,color:'#52C41A'},
+  {id:'alg',name:'代數房',topic:'代數',tileX:1,tileY:2,w:3,h:2,color:'#4A90D9',theme:'algebra',floorColor:'#DBEAFE'},
+  {id:'geo',name:'幾何房',topic:'幾何',tileX:5,tileY:2,w:3,h:2,color:'#52C41A',theme:'geometry',floorColor:'#D1FAE5'},
   // 1st floor - 右翼
-  {id:'stat',name:'統計房',topic:'統計',tileX:9,tileY:2,w:3,h:2,color:'#FAAD14'},
-  {id:'prob',name:'概率房',topic:'概率',tileX:13,tileY:2,w:3,h:2,color:'#722ED1'},
+  {id:'stat',name:'統計房',topic:'統計',tileX:9,tileY:2,w:3,h:2,color:'#FAAD14',theme:'statistics',floorColor:'#FEF3C7'},
+  {id:'prob',name:'概率房',topic:'概率',tileX:13,tileY:2,w:3,h:2,color:'#722ED1',theme:'probability',floorColor:'#EDE9FE'},
   // 2nd floor - 左翼
-  {id:'func',name:'函數房',topic:'函數',tileX:1,tileY:5,w:3,h:2,color:'#EB7196'},
-  {id:'eq',name:'方程房',topic:'方程',tileX:5,tileY:5,w:3,h:2,color:'#36CFC9'},
+  {id:'func',name:'函數房',topic:'函數',tileX:1,tileY:5,w:3,h:2,color:'#EB7196',theme:'function',floorColor:'#FCE7F3'},
+  {id:'eq',name:'方程房',topic:'方程',tileX:5,tileY:5,w:3,h:2,color:'#36CFC9',theme:'equation',floorColor:'#CFFAFE'},
   // 2nd floor - 右翼
-  {id:'area',name:'面積房',topic:'面積',tileX:9,tileY:5,w:3,h:2,color:'#FA8C16'},
-  {id:'coord',name:'坐標房',topic:'坐標',tileX:13,tileY:5,w:3,h:2,color:'#F5222D'},
+  {id:'area',name:'面積房',topic:'面積',tileX:9,tileY:5,w:3,h:2,color:'#FA8C16',theme:'area',floorColor:'#FFEDD5'},
+  {id:'coord',name:'坐標房',topic:'坐標',tileX:13,tileY:5,w:3,h:2,color:'#F5222D',theme:'coordinate',floorColor:'#FEE2E2'},
   // Ground floor
-  {id:'ratio',name:'比率房',topic:'比率',tileX:1,tileY:8,w:3,h:2,color:'#13C2C2'},
-  {id:'seq',name:'數列房',topic:'數列',tileX:5,tileY:8,w:3,h:2,color:'#AD8B00'},
-  {id:'pct',name:'百分法房',topic:'百分率',tileX:9,tileY:8,w:3,h:2,color:'#8B5CF6'},
-  {id:'approx',name:'近似房',topic:'近似值',tileX:13,tileY:8,w:3,h:2,color:'#64748B'},
+  {id:'ratio',name:'比率房',topic:'比率',tileX:1,tileY:8,w:3,h:2,color:'#13C2C2',theme:'ratio',floorColor:'#CFFAFB'},
+  {id:'seq',name:'數列房',topic:'數列',tileX:5,tileY:8,w:3,h:2,color:'#AD8B00',theme:'sequence',floorColor:'#FEF08A'},
+  {id:'pct',name:'百分法房',topic:'百分率',tileX:9,tileY:8,w:3,h:2,color:'#8B5CF6',theme:'percentage',floorColor:'#F3E8FF'},
+  {id:'approx',name:'近似房',topic:'近似值',tileX:13,tileY:8,w:3,h:2,color:'#64748B',theme:'approximation',floorColor:'#F1F5F9'},
   // Arena (special room, accessible via menu)
-  {id:'arena',name:'競技場',topic:'arena',tileX:1,tileY:10,w:3,h:1,color:'#D4AF37'},
+  {id:'arena',name:'競技場',topic:'arena',tileX:1,tileY:10,w:3,h:1,color:'#D4AF37',theme:'arena',floorColor:'#FEF9E7'},
   // Phase 4 - Daily Challenge and Entrance
-  {id:'daily',name:'每日挑戰',topic:'daily',tileX:7,tileY:9,w:2,h:2,color:'#FF6B35'},
-  {id:'entrance',name:'入口',topic:'entrance',tileX:7,tileY:11,w:2,h:1,color:'#3d5a3d'},
+  {id:'daily',name:'每日挑戰',topic:'daily',tileX:7,tileY:9,w:2,h:2,color:'#FF6B35',theme:'daily',floorColor:'#FFF7ED'},
+  {id:'entrance',name:'入口',topic:'entrance',tileX:7,tileY:11,w:2,h:1,color:'#3d5a3d',theme:'entrance',floorColor:'#D1FAE5'},
 ];
 
 const NPC_LABELS=[
@@ -1907,7 +1919,9 @@ class MainScene extends Phaser.Scene{
   create(){
     this.physics.world.setBounds(0,0,MAP_COLS*TILE,MAP_ROWS*TILE);
     this.drawMap();
-    this.player=this.physics.add.sprite(8*TILE+24,10*TILE+24,'player');
+    this.createCharacterVariants();
+    const avatarKey='avatar'+gameState.selectedAvatar;
+    this.player=this.physics.add.sprite(8*TILE+24,10*TILE+24,avatarKey);
     this.player.setCollideWorldBounds(true);
     this.cursors=this.input.keyboard.createCursorKeys();
     this.wasd=this.input.keyboard.addKeys('W,A,S,D');
@@ -1923,19 +1937,148 @@ class MainScene extends Phaser.Scene{
 
   createPixelTextures(){
     const mk=(key,w,h,draw)=>{const g=this.make.graphics({add:false});draw(g);g.generateTexture(key,w,h);g.destroy();};
-    mk('floor',TILE,TILE,g=>{g.fillStyle(0x8b5d8b);g.fillRect(0,0,TILE,TILE);g.fillStyle(0x956799);g.fillRect(0,0,TILE/2,TILE/2);g.fillRect(TILE/2,TILE/2,TILE/2,TILE/2);});
-    mk('wall',TILE,TILE,g=>{g.fillStyle(0x4a4a6a);g.fillRect(0,0,TILE,TILE);g.fillStyle(0x545474);g.fillRect(2,2,TILE-4,TILE-4);g.fillStyle(0x404060);g.fillRect(4,4,TILE-8,TILE-8);});
-    mk('entrance',TILE,TILE,g=>{g.fillStyle(0x3d5a3d);g.fillRect(0,0,TILE,TILE);g.fillStyle(0x476447);g.fillRect(0,0,TILE/2,TILE);});
-    mk('classroom',TILE,TILE,g=>{g.fillStyle(0x4a90d9);g.fillRect(0,0,TILE,TILE);g.fillStyle(0x549ae3);g.fillRect(4,4,TILE-8,TILE-8);});
-    mk('door',TILE,TILE,g=>{g.fillStyle(0x8b6914);g.fillRect(0,0,TILE,TILE);g.fillStyle(0x9f7d28);g.fillRect(4,4,TILE-8,TILE-8);});
+    // Floor tiles - warm school floor with procedurally varied patterns to break grid effect
+    // Create 4 floor variants for organic, non-repeating look
+    const mkFloor=(key,variant)=>mk(key+variant,TILE,TILE,g=>{
+      // Base warm beige
+      g.fillStyle(0xE2C9A0);
+      g.fillRect(0,0,TILE,TILE);
+      // Subtle grid lines (lighter)
+      g.fillStyle(0xD4BC8E);
+      g.fillRect(0,0,TILE,2);
+      g.fillRect(0,0,2,TILE);
+      // Variation per type to break monotony
+      if(variant===0){g.fillStyle(0xD8C89A);g.fillRect(TILE/4,TILE/4,TILE/2,TILE/2);}
+      else if(variant===1){g.fillStyle(0xCCBF92);g.fillRect(TILE/2,TILE/2,TILE/2,TILE/2);}
+      else if(variant===2){g.fillStyle(0xE0D0A8);g.fillRect(0,TILE/2,TILE/2,TILE/2);g.fillStyle(0xD8C494);g.fillRect(TILE/2,0,TILE/2,TILE/2);}
+      else{g.fillStyle(0xD4BE8A);g.fillRect(TILE/4,0,TILE/4,TILE);}
+      // Subtle highlight
+      g.fillStyle(0xE8D4B0);
+      g.fillRect(4,4,TILE/3,TILE/4);
+    });
+    mkFloor('floor',0);mkFloor('floor',1);mkFloor('floor',2);mkFloor('floor',3);
+    // Random variant when placing floor - will be handled in drawMap with 4 sprite variants
+    mk('floor',TILE,TILE,g=>{g.fillStyle(0xE2C9A0);g.fillRect(0,0,TILE,TILE);g.fillStyle(0xD4BC8E);g.fillRect(0,0,TILE,2);g.fillRect(0,0,2,TILE);g.fillStyle(0xE8D4B0);g.fillRect(4,4,TILE/3,TILE/4);});
+    // Wall tiles - modern light gray
+    mk('wall',TILE,TILE,g=>{g.fillStyle(0x9CA3AF);g.fillRect(0,0,TILE,TILE);g.fillStyle(0xB0B8C4);g.fillRect(2,2,TILE-4,TILE-4);g.fillStyle(0x8B95A3);g.fillRect(4,4,TILE-8,TILE-8);});
+    // Entrance tiles - soft green
+    mk('entrance',TILE,TILE,g=>{g.fillStyle(0x6EE7B7);g.fillRect(0,0,TILE,TILE);g.fillStyle(0x8BF4CE);g.fillRect(0,0,TILE/2,TILE);});
+    // Classroom tiles - each room gets themed color from ROOMS.color, but we use a softer base
+    // Room-specific themed floor tiles (P4: Building/Map Diversity)
+    const mkRoomFloor=(topic,floorColor)=>{
+      mk('roomfloor_'+topic,TILE,TILE,g=>{
+        g.fillStyle(parseInt(floorColor.replace('#',''),16));
+        g.fillRect(0,0,TILE,TILE);
+        // subtle lighter pattern
+        g.fillStyle(0xFFFFFF);g.fillRect(0,0,TILE,2);g.fillRect(0,0,2,TILE);
+        g.fillStyle(0xF8F8F8);g.fillRect(2,2,TILE/3,TILE/4);
+      });
+    };
+    mkRoomFloor('algebra','#DBEAFE');
+    mkRoomFloor('geometry','#D1FAE5');
+    mkRoomFloor('statistics','#FEF3C7');
+    mkRoomFloor('probability','#EDE9FE');
+    mkRoomFloor('function','#FCE7F3');
+    mkRoomFloor('equation','#CFFAFE');
+    mkRoomFloor('area','#FFEDD5');
+    mkRoomFloor('coordinate','#FEE2E2');
+    mkRoomFloor('ratio','#CFFAFB');
+    mkRoomFloor('sequence','#FEF08A');
+    mkRoomFloor('percentage','#F3E8FF');
+    mkRoomFloor('approximation','#F1F5F9');
+    mkRoomFloor('arena','#FEF9E7');
+    mkRoomFloor('daily','#FFF7ED');
+    mkRoomFloor('entrance','#D1FAE5');
+    // Door tiles - warm wood brown
+    mk('door',TILE,TILE,g=>{g.fillStyle(0xB8860B);g.fillRect(0,0,TILE,TILE);g.fillStyle(0xD4A017);g.fillRect(4,4,TILE-8,TILE-8);});
+    // Player character - 4 directional sprites (up/down/left/right)
+    // DOWN (default facing camera)
+    mk('player_down',24,32,g=>{
+      g.fillStyle(0xFFD4A8);g.fillRect(7,0,10,10);g.fillRect(6,1,12,8);
+      g.fillStyle(0x333333);g.fillRect(9,3,3,3);g.fillRect(13,3,3,3);g.fillStyle(0x333333);g.fillRect(10,5,2,2);g.fillRect(14,5,2,2);
+      g.fillStyle(0x87CEEB);g.fillRect(6,10,12,10);g.fillStyle(0xADD8E6);g.fillRect(8,10,8,4);
+      g.fillStyle(0x3D5A80);g.fillRect(6,20,5,10);g.fillRect(13,20,5,10);
+      g.fillStyle(0x5D4E37);g.fillRect(6,28,5,4);g.fillRect(13,28,5,4);
+    });
+    // UP (back to camera)
+    mk('player_up',24,32,g=>{
+      g.fillStyle(0xFFD4A8);g.fillRect(7,0,10,10);g.fillRect(6,1,12,8);
+      // No eyes visible from back
+      g.fillStyle(0xE8C49A);g.fillRect(8,2,8,2);g.fillRect(6,4,12,2); // hair/hint
+      g.fillStyle(0x87CEEB);g.fillRect(6,10,12,10);g.fillStyle(0xADD8E6);g.fillRect(8,10,8,4);
+      g.fillStyle(0x3D5A80);g.fillRect(6,20,5,10);g.fillRect(13,20,5,10);
+      g.fillStyle(0x5D4E37);g.fillRect(6,28,5,4);g.fillRect(13,28,5,4);
+    });
+    // LEFT
+    mk('player_left',24,32,g=>{
+      g.fillStyle(0xFFD4A8);g.fillRect(6,0,10,10);g.fillRect(5,1,11,8);
+      g.fillStyle(0x333333);g.fillRect(7,3,3,3);g.fillStyle(0x333333);g.fillRect(8,5,2,2);
+      g.fillStyle(0x87CEEB);g.fillRect(7,10,11,10);g.fillStyle(0xADD8E6);g.fillRect(9,10,7,4);
+      g.fillStyle(0x3D5A80);g.fillRect(7,20,5,10);g.fillRect(14,20,4,10);
+      g.fillStyle(0x5D4E37);g.fillRect(7,28,5,4);g.fillRect(14,28,4,4);
+    });
+    // RIGHT
+    mk('player_right',24,32,g=>{
+      g.fillStyle(0xFFD4A8);g.fillRect(8,0,10,10);g.fillRect(8,1,11,8);
+      g.fillStyle(0x333333);g.fillRect(14,3,3,3);g.fillStyle(0x333333);g.fillRect(14,5,2,2);
+      g.fillStyle(0x87CEEB);g.fillRect(6,10,11,10);g.fillStyle(0xADD8E6);g.fillRect(8,10,7,4);
+      g.fillStyle(0x3D5A80);g.fillRect(5,20,5,10);g.fillRect(13,20,4,10);
+      g.fillStyle(0x5D4E37);g.fillRect(5,28,5,4);g.fillRect(13,28,4,4);
+    });
     mk('player',24,32,g=>{
-      g.fillStyle(0xffc899);g.fillRect(8,0,8,8);
-      g.fillStyle(0x4a90d9);g.fillRect(6,8,12,12);
-      g.fillStyle(0x000000);g.fillRect(10,2,2,2);g.fillRect(14,2,2,2);
-      g.fillStyle(0x323250);g.fillRect(6,20,4,12);g.fillRect(14,20,4,12);
-      g.fillStyle(0x1e1e3c);g.fillRect(6,28,4,4);g.fillRect(14,28,4,4);
+      g.fillStyle(0xFFD4A8);g.fillRect(7,0,10,10);g.fillRect(6,1,12,8);
+      g.fillStyle(0x333333);g.fillRect(9,3,3,3);g.fillRect(13,3,3,3);g.fillStyle(0x333333);g.fillRect(10,5,2,2);g.fillRect(14,5,2,2);
+      g.fillStyle(0x87CEEB);g.fillRect(6,10,12,10);g.fillStyle(0xADD8E6);g.fillRect(8,10,8,4);
+      g.fillStyle(0x3D5A80);g.fillRect(6,20,5,10);g.fillRect(13,20,5,10);
+      g.fillStyle(0x5D4E37);g.fillRect(6,28,5,4);g.fillRect(13,28,5,4);
     });
     mk('heart',16,16,g=>{g.fillStyle(0xf5222d);g.fillCircle(8,8,7);g.fillStyle(0xff6464);g.fillCircle(6,6,3);});
+  }
+
+  // P5: Character Diversity - Create 4 character avatar variants
+  createCharacterVariants(){
+    const mk=this.make.graphics.bind(this.make.graphics({add:false}));
+    const av=(key,skinColor,shirtColor,pantsColor,hairColor,hairStyle)=>{
+      const g=this.make.graphics({add:false});
+      // Head with skin/hair based on style
+      if(hairStyle==='short'){
+        g.fillStyle(hairColor);g.fillRect(7,0,10,3);g.fillRect(6,2,12,2);
+        g.fillStyle(skinColor);g.fillRect(7,3,10,8);g.fillRect(6,4,12,6);
+      }else if(hairStyle==='long'){
+        g.fillStyle(hairColor);g.fillRect(7,0,10,3);g.fillRect(5,-2,14,6);
+        g.fillStyle(skinColor);g.fillRect(7,3,10,8);g.fillRect(6,4,12,6);
+      }else if(hairStyle==='curly'){
+        g.fillStyle(hairColor);g.fillCircle(7,2,3);g.fillCircle(11,2,3);g.fillCircle(15,2,3);
+        g.fillStyle(skinColor);g.fillRect(7,3,10,8);g.fillRect(6,4,12,6);
+      }else{
+        g.fillStyle(hairColor);g.fillRect(7,0,10,4);
+        g.fillStyle(skinColor);g.fillRect(7,3,10,8);g.fillRect(6,4,12,6);
+      }
+      // Eyes
+      g.fillStyle(0x333333);g.fillRect(9,5,3,3);g.fillRect(13,5,3,3);
+      // Shirt
+      g.fillStyle(shirtColor);g.fillRect(6,11,12,10);
+      // Pants
+      g.fillStyle(pantsColor);g.fillRect(6,21,5,10);g.fillRect(13,21,5,10);
+      // Shoes
+      g.fillStyle(0x5D4E37);g.fillRect(6,29,5,3);g.fillRect(13,29,5,3);
+      g.generateTexture(key,24,32);g.destroy();
+    };
+    // Avatar 1: Short hair, blue shirt (default student look)
+    av('avatar1',0xFFD4A8,0x87CEEB,0x3D5A80,0x4A3728,'short');
+    // Avatar 2: Curly hair, green shirt (creative type)
+    av('avatar2',0xD4A574,0x52C41A,0x2D5A30,0x1A1A1A,'curly');
+    // Avatar 3: Long hair, pink shirt (artistic type)
+    av('avatar3',0xFFE4C4,0xF7B2D3,0x8B4572,0x8B4513,'long');
+    // Avatar 4: Glasses, orange shirt (studious type)
+    av('avatar4',0xFFD4A8,0xFF8C00,0x3D5A80,0x2F1B0F,'short');
+    // Avatar 4 also gets glasses drawn on top
+    const g4=this.make.graphics({add:false});
+    av('avatar4',0xFFD4A8,0xFF8C00,0x3D5A80,0x2F1B0F,'short');
+    // Add glasses overlay
+    g4.fillStyle(0x333333);g4.fillRect(8,5,4,1);g4.fillRect(14,5,4,1);
+    g4.fillRect(7,4,1,3);g4.fillRect(12,4,1,3);g4.fillRect(18,4,1,3);
+    g4.generateTexture('avatar4',24,32);g4.destroy();
   }
 
   drawMap(){
@@ -1943,16 +2086,22 @@ class MainScene extends Phaser.Scene{
     for(let y=0;y<MAP_ROWS;y++)for(let x=0;x<MAP_COLS;x++){
       const t=this.getTile(x,y);
       if(t==='wall'){const w=this.add.sprite(x*TILE+24,y*TILE+24,'wall');floor.add(w);}
-      else{const f=this.add.sprite(x*TILE+24,y*TILE+24,'floor');floor.add(f);}
+      else{
+        // Use 4 floor variants based on position to break grid monotony
+        const variant=(x*7+y*13)%4;
+        const f=this.add.sprite(x*TILE+24,y*TILE+24,'floor'+variant);
+        floor.add(f);
+      }
     }
     ROOMS.forEach(r=>{
       for(let dy=0;dy<r.h;dy++)for(let dx=0;dx<r.w;dx++){
         const x=r.tileX+dx,y=r.tileY+dy;
-        const cl=this.add.sprite(x*TILE+24,y*TILE+24,'classroom');
-        cl.setTint(parseInt(r.color.replace('#',''),16));
-        floor.add(cl);
+        // Use themed room floor texture
+        const rf=this.add.sprite(x*TILE+24,y*TILE+24,'roomfloor_'+r.theme);
+        rf.setTint(parseInt(r.color.replace('#',''),16));
+        floor.add(rf);
       }
-      const sign=this.add.text((r.tileX+r.w/2)*TILE,(r.tileY-0.5)*TILE,r.name,{fontSize:'10px',color:'#fff',backgroundColor:'rgba(0,0,0,0.7)',padding:{x:4,y:2}});
+      const sign=this.add.text((r.tileX+r.w/2)*TILE,(r.tileY-0.5)*TILE,r.name,{fontSize:'10px',color:r.color,backgroundColor:'rgba(255,255,255,.85)',padding:{x:4,y:2}});
       sign.setOrigin(.5);
     });
     // NPC labels
@@ -2029,7 +2178,17 @@ class MainScene extends Phaser.Scene{
     if(vx!==0&&vy!==0){vx*=0.707;vy*=0.707;}
     this.player.setVelocity(vx*speed,vy*speed);
     if(vx!==0||vy!==0){
-      this.player.setFlipX(vx<0);
+      // 4-directional sprite switching based on movement direction
+      let newKey='player_down';
+      if(vy<0)newKey='player_up';
+      else if(vy>0)newKey='player_down';
+      if(vx<0&&vy===0)newKey='player_left';
+      else if(vx>0&&vy===0)newKey='player_right';
+      else if(vx<0&&vy<0)newKey='player_left';
+      else if(vx>0&&vy<0)newKey='player_right';
+      else if(vx<0&&vy>0)newKey='player_left';
+      else if(vx>0&&vy>0)newKey='player_right';
+      if(this.player.texture.key!==newKey)this.player.setTexture(newKey);
       const tileX=Math.floor(this.player.x/TILE),tileY=Math.floor(this.player.y/TILE);
       const tileKey=tileX+'_'+tileY;
       if(this.lastTile!==tileKey){this.lastTile=tileKey;sfxStep();}
@@ -2646,19 +2805,56 @@ function generateFriendCode(){
   return gameState.friendCode;
 }
 
-function showProfile(){
-  const code=generateFriendCode();
-  const name=currentUser?.displayName||document.getElementById('user-name').textContent||'Player';
-  document.getElementById('profile-name').textContent=name;
-  document.getElementById('profile-level').textContent='Lv.'+gameState.level;
-  document.getElementById('profile-xp').textContent=gameState.xp;
-  document.getElementById('profile-correct').textContent=gameState.correctAnswers||0;
-  document.getElementById('profile-cards').textContent=gameState.cards.length;
-  document.getElementById('profile-friends').textContent=(gameState.friends||[]).length;
-  document.getElementById('profile-friend-code').textContent=code;
-  document.getElementById('arena-panel').style.display='none';
-  document.getElementById('profile-panel').style.display='flex';
+// P5: Character Avatar Selection
+function selectAvatar(num){
+  gameState.selectedAvatar=num;
+  saveState();
+  // Update UI selection
+  document.querySelectorAll('.avatar-option').forEach(el=>{
+    const av=parseInt(el.dataset.av);
+    el.style.border='2px solid '+(av===num?'#4A90D9':'#ccc');
+    el.style.background=av===num?'rgba(74,144,217,.2)':'rgba(255,255,255,.5)';
+  });
+  // Reload scene to apply avatar change (simple approach)
+  if(window.game&&window.game.scene&&window.game.scene.getScene('Main')){
+    window.game.scene.getScene('Main').scene.restart();
+  }
 }
+
+function renderAvatarPreviews(){
+  // Draw each avatar preview on its canvas
+  const avatars=[
+    {key:'avatar1',skin:0xFFD4A8,shirt:0x87CEEB,pants:0x3D5A80,hair:0x4A3728},
+    {key:'avatar2',skin:0xD4A574,shirt:0x52C41A,pants:0x2D5A30,hair:0x1A1A1A},
+    {key:'avatar3',skin:0xFFE4C4,shirt:0xF7B2D3,pants:0x8B4572,hair:0x8B4513},
+    {key:'avatar4',skin:0xFFD4A8,shirt:0xFF8C00,pants:0x3D5A80,hair:0x2F1B0F},
+  ];
+  avatars.forEach((av,i)=>{
+    const canvas=document.getElementById('av-preview-'+(i+1));
+    if(!canvas)return;
+    const ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,24,32);
+    // Head
+    ctx.fillStyle='#'+av.skin.toString(16).padStart(6,'0');
+    ctx.fillRect(7,3,10,8);
+    // Hair
+    ctx.fillStyle='#'+av.hair.toString(16).padStart(6,'0');
+    ctx.fillRect(7,0,10,4);
+    // Eyes
+    ctx.fillStyle='#333';
+    ctx.fillRect(9,5,3,3);ctx.fillRect(13,5,3,3);
+    // Shirt
+    ctx.fillStyle='#'+av.shirt.toString(16).padStart(6,'0');
+    ctx.fillRect(6,11,12,10);
+    // Pants
+    ctx.fillStyle='#'+av.pants.toString(16).padStart(6,'0');
+    ctx.fillRect(6,21,5,10);ctx.fillRect(13,21,5,10);
+    // Shoes
+    ctx.fillStyle='#5D4E37';
+    ctx.fillRect(6,29,5,3);ctx.fillRect(13,29,5,3);
+  });
+}
+
 function closeProfile(){document.getElementById('profile-panel').style.display='none'}
 
 function copyFriendCode(){
