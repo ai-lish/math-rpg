@@ -231,6 +231,16 @@ class MapHubScene extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
     this.wasd = this.input.keyboard.addKeys('W,A,S,D');
     
+    // Debug: Press 1/2/3 to teleport to zones
+    this.input.keyboard.on('keydown-ONE', () => window.location.href = 'school/index.html');
+    this.input.keyboard.on('keydown-TWO', () => window.location.href = 'algebra/index.html');
+    this.input.keyboard.on('keydown-THREE', () => window.location.href = 'geometry/index.html');
+    
+    // Debug: Press T to log player position
+    this.input.keyboard.on('keydown-T', () => {
+      console.log('Player position:', this.player.x, this.player.y);
+    });
+    
     // Joystick
     this.joystick = { x: 0, y: 0 };
     this.setupJoystick();
