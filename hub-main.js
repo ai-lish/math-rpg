@@ -46,8 +46,10 @@ class MapHubScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, HUB_COLS * HUB_TILE, HUB_ROWS * HUB_TILE);
     
     // Update zone label
-    document.getElementById('zone-label').textContent = '🗺️ 冒險大廳';
-    document.getElementById('back-btn').style.display = 'none';
+    const zlEl = document.getElementById('zone-label');
+    if (zlEl) zlEl.textContent = '🗺️ 冒險大廳';
+    const bbEl = document.getElementById('back-btn');
+    if (bbEl) bbEl.style.display = 'none';
     
     // Init HUD
     updateHUD();

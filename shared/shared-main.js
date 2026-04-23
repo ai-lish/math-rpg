@@ -25,14 +25,12 @@ try {
   db = firebase.database();
   firebaseConfigured = true;
   console.log('Firebase connected!');
-  document.getElementById('firebase-status').style.display = 'block';
-  document.getElementById('firebase-status').textContent = '在線';
-  document.getElementById('firebase-status').className = 'online';
+  const fsEl = document.getElementById('firebase-status');
+  if (fsEl) { fsEl.style.display = 'block'; fsEl.textContent = '在線'; fsEl.className = 'online'; }
 } catch(e) {
   console.log('Firebase init error - offline mode', e);
-  document.getElementById('firebase-status').style.display = 'block';
-  document.getElementById('firebase-status').textContent = '離線';
-  document.getElementById('firebase-status').className = 'offline';
+  const fsErrEl = document.getElementById('firebase-status');
+  if (fsErrEl) { fsErrEl.style.display = 'block'; fsErrEl.textContent = '離線'; fsErrEl.className = 'offline'; }
 }
 
 // ============================================================
@@ -711,12 +709,17 @@ function saveState(){
 
 function updateHUD(){
   const hpPct=Math.max(0,gameState.hp/gameState.maxHp*100);
-  document.getElementById('hp-bar').style.width=hpPct+'%';
-  document.getElementById('hp-text').textContent=Math.round(gameState.hp);
+  const hpBarEl=document.getElementById('hp-bar');
+  if(hpBarEl)hpBarEl.style.width=hpPct+'%';
+  const hpTxtEl=document.getElementById('hp-text');
+  if(hpTxtEl)hpTxtEl.textContent=Math.round(gameState.hp);
   const xpPct=gameState.xp/(100*gameState.level)*100;
-  document.getElementById('xp-bar').style.width=Math.min(100,xpPct)+'%';
-  document.getElementById('xp-text').textContent=gameState.xp;
-  document.getElementById('level-text').textContent='Lv.'+gameState.level;
+  const xpBarEl=document.getElementById('xp-bar');
+  if(xpBarEl)xpBarEl.style.width=Math.min(100,xpPct)+'%';
+  const xpTxtEl=document.getElementById('xp-text');
+  if(xpTxtEl)xpTxtEl.textContent=gameState.xp;
+  const ltEl=document.getElementById('level-text');
+  if(ltEl)ltEl.textContent='Lv.'+gameState.level;
   document.getElementById('user-level')&&(document.getElementById('user-level').textContent='Lv.'+gameState.level);
   const cEl=document.getElementById('hud-card-count');
   if(cEl)cEl.textContent=gameState.cards.length;
@@ -783,10 +786,12 @@ function loseHP(amt){
 }
 
 function showLevelUp(){
-  document.getElementById('level-up').style.display='flex';
-  document.getElementById('level-up-info').textContent='等級 '+gameState.level;
+  const luEl=document.getElementById('level-up');
+  const luInfoEl=document.getElementById('level-up-info');
+  if(luEl)luEl.style.display='flex';
+  if(luInfoEl)luInfoEl.textContent='等級 '+gameState.level;
   spawnFireworks();
-  setTimeout(()=>{document.getElementById('level-up').style.display='none';},2500);
+  setTimeout(()=>{const lEl=document.getElementById('level-up');if(lEl)lEl.style.display='none';},2500);
 }
 
 function spawnFireworks(){
@@ -835,18 +840,20 @@ function showLevelUpInfo(){}
 // ============================================================
 function showMenu(){
   const info=document.getElementById('menu-player-info');
-  info.textContent=`Lv.${gameState.level} | 總答題:${gameState.questionsAnswered} | 正確:${gameState.correctAnswers}`;
-  document.getElementById('menu').style.display='flex';
+  if(info)info.textContent=`Lv.${gameState.level} | 總答題:${gameState.questionsAnswered} | 正確:${gameState.correctAnswers}`;
+  const menuEl=document.getElementById('menu');
+  if(menuEl)menuEl.style.display='flex';
 }
-function closeMenu(){document.getElementById('menu').style.display='none'}
+function closeMenu(){const m=document.getElementById('menu');if(m)m.style.display='none';}
 function returnToMapHub(){closeMenu();game.scene.stop('MainScene');game.scene.start('MapHub');}
 
 function showLeaderboard(){
-  document.getElementById('leaderboard-panel').style.display='flex';
+  const lpEl=document.getElementById('leaderboard-panel');
+  if(lpEl)lpEl.style.display='flex';
   renderLeaderboard();
 }
 
-function closeLeaderboard(){document.getElementById('leaderboard-panel').style.display='none'}
+function closeLeaderboard(){const lp=document.getElementById('leaderboard-panel');if(lp)lp.style.display='none';}
 
 function renderLeaderboard(){
   const list=document.getElementById('leaderboard-list');
@@ -872,11 +879,12 @@ function renderLeaderboard(){
 }
 
 function showDailyTasks(){
-  document.getElementById('daily-tasks-panel').style.display='flex';
+  const dtEl=document.getElementById('daily-tasks-panel');
+  if(dtEl)dtEl.style.display='flex';
   renderDailyTasks();
 }
 
-function closeDailyTasks(){document.getElementById('daily-tasks-panel').style.display='none'}
+function closeDailyTasks(){const dt=document.getElementById('daily-tasks-panel');if(dt)dt.style.display='none';}
 
 function renderDailyTasks(){
   const list=document.getElementById('tasks-list');
