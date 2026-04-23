@@ -2192,6 +2192,7 @@ class AlgebraScene extends Phaser.Scene {
   }
 }
 
+class MainScene extends Phaser.Scene{
   constructor(){super({key:'Main'});this.player=null;this.cursors=null;this.joystick={x:0,y:0};this.lastTile=null;this.lastRoom=null;}
 
   preload(){this.createPixelTextures();this.createCharacterVariants();}
