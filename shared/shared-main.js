@@ -1,4 +1,3 @@
-<script>
 // ============================================================
 // FIREBASE CONFIGURATION
 // ============================================================
@@ -949,3 +948,36 @@ function renderMath(el,tex){
   });
 }
 function renderMathInline(el,tex){
+  if(typeof katex==='undefined'){el.textContent=tex;return;}
+  el.innerHTML='';
+  const parts=tex.split(/($[^$]+$)/g);
+  parts.forEach(part=>{
+    if(/^$([^$]+)$/.test(part)){
+      const math=part.replace(/^$([^$]+)$/,'$1');
+      const span=document.createElement('span');
+      try{katex.render(math,span,{throwOnError:false,displayMode:false});}catch(e){span.textContent=part;}
+      el.appendChild(span);
+    } else if(part){
+      el.appendChild(document.createTextNode(part));
+    }
+  });
+}
+
+// Make shared functions globally accessible (required by hub-main.js and other scenes)
+window.updateHUD = updateHUD;
+window.loadState = loadState;
+window.saveState = saveState;
+window.addXP = addXP;
+window.loseHP = loseHP;
+window.showToast = showToast;
+window.checkAchievements = checkAchievements;
+window.gameState = gameState;
+window.sfxCorrect = sfxCorrect;
+window.sfxWrong = sfxWrong;
+window.sfxLevelUp = sfxLevelUp;
+window.sfxStep = sfxStep;
+window.sfxStreak = sfxStreak;
+window.renderMath = renderMath;
+window.renderMathInline = renderMathInline;
+window.initAudio = initAudio;
+window.playTone = playTone;
