@@ -1,60 +1,166 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Math RPG - 學校</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #0d1117;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
+      background: #1A1A2E;
       font-family: 'Segoe UI', sans-serif;
       overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
-    .container {
-      text-align: center;
-      color: #fff;
-      padding: 40px;
+    #game-container {
+      position: relative;
+      width: 100%;
+      max-width: 768px;
+      aspect-ratio: 16/12;
     }
-    .coming-soon {
-      font-size: 64px;
-      margin-bottom: 20px;
+    #game-container canvas {
+      width: 100% !important;
+      height: 100% !important;
     }
-    h1 {
-      font-size: 36px;
-      color: #4A90D9;
-      margin-bottom: 12px;
+    /* HUD */
+    #hud {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      right: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      pointer-events: none;
+      z-index: 10;
     }
-    p {
-      font-size: 16px;
-      color: #888;
-      margin-bottom: 30px;
-    }
-    .back-btn {
-      background: #4A90D9;
-      color: #fff;
-      border: none;
-      padding: 12px 28px;
+    .hud-left { display: flex; flex-direction: column; gap: 4px; }
+    .hud-right { display: flex; gap: 8px; align-items: center; }
+    .stat-bar {
+      background: rgba(0,0,0,0.6);
       border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.2s;
+      padding: 4px 8px;
+      min-width: 100px;
     }
-    .back-btn:hover {
-      background: #357abd;
+    .bar-label { font-size: 10px; color: #aaa; margin-bottom: 2px; }
+    .bar-container { background: #333; height: 8px; border-radius: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+    #hp-fill { background: linear-gradient(90deg, #f5222d, #ff7875); width: 100%; }
+    #xp-fill { background: linear-gradient(90deg, #faad14, #ffe58f); width: 0%; }
+    .stat-text { font-size: 11px; color: #fff; margin-top: 2px; }
+    .level-badge {
+      background: linear-gradient(135deg, #722ed1, #9254de);
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    #firebase-status {
+      display: none;
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-size: 10px;
+    }
+    .online { background: #52c41a; color: #fff; }
+    .offline { background: #ff4d4f; color: #fff; }
+    /* Joystick */
+    #joystick-zone {
+      display: none;
+      position: fixed;
+      width: 100px;
+      height: 100px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.3);
+      z-index: 100;
+      touch-action: none;
+    }
+    #joystick-knob {
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.5);
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    /* Back button */
+    #back-btn {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      z-index: 20;
+    }
+    /* Zone label */
+    #zone-label {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      color: #4A90D9;
+      padding: 4px 16px;
+      border-radius: 12px;
+      font-size: 12px;
+      z-index: 10;
+    }
+    /* Loading placeholder */
+    #loading-text {
+      color: #fff;
+      font-size: 16px;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="coming-soon">🏫</div>
-    <h1>School Zone</h1>
-    <p>即將在 Phase 2 開放</p>
-    <button class="back-btn" onclick="window.location.href='../index.html'">返回 Hub</button>
+  <div id="game-container">
+    <div id="hud">
+      <div class="hud-left">
+        <div class="stat-bar">
+          <div class="bar-label">HP</div>
+          <div class="bar-container"><div id="hp-fill" class="bar-fill"></div></div>
+          <div class="stat-text"><span id="hp-text">100</span> / <span id="max-hp-text">100</span></div>
+        </div>
+        <div class="stat-bar">
+          <div class="bar-label">XP</div>
+          <div class="bar-container"><div id="xp-fill" class="bar-fill"></div></div>
+          <div class="stat-text"><span id="xp-text">0</span> / <span id="xp-needed">100</span></div>
+        </div>
+      </div>
+      <div class="hud-right">
+        <span id="firebase-status">離線</span>
+        <span class="level-badge" id="level-text">Lv.1</span>
+      </div>
+    </div>
+    <div id="back-btn" onclick="returnToHub()">🏠 返回大廳</div>
+    <div id="zone-label">🏫 學校 (Phase 2)</div>
+    <div id="loading-text">載入中... (Phase 2 完成後可玩)</div>
   </div>
+  <div id="joystick-zone"><div id="joystick-knob"></div></div>
+
+  <script src="../shared/shared-main.js"></script>
+  <script src="school-main.js"></script>
+  <script>
+    // Init audio on first interaction
+    document.addEventListener('click', () => initAudio(), { once: true });
+    document.addEventListener('touchstart', () => initAudio(), { once: true });
+    
+    // Load state and update HUD
+    loadState();
+    updateHUD();
+  </script>
 </body>
 </html>

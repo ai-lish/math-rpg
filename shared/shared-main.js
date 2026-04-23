@@ -1,3 +1,4 @@
+<script>
 // ============================================================
 // FIREBASE CONFIGURATION
 // ============================================================
@@ -629,3 +630,322 @@ function submitToGAS(answerData){
 // ============================================================
 // AUTHENTICATION
 // ============================================================
+function signIn(){
+  if(!firebaseConfigured){alert('Firebase未配置,無法登入。\n請查看 SETUP.md 了解如何配置。');return;}
+  const provider=new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({hd:'lsc.edu.hk'}); // School domain
+  firebase.auth().signInWithPopup(provider).then(result=>{
+    currentUser=result.user;
+    updateAuthUI();
+    loadFromFirebase(currentUser.uid).then(()=>syncToFirebase());
+    syncOnlineStatus();
+  }).catch(err=>{console.error(err);alert('登入失敗: '+err.message);});
+}
+
+function signOut(){
+  if(!firebaseConfigured){return;}
+  if(currentUser)getOnlineRef(currentUser.uid).remove();
+  firebase.auth().signOut().then(()=>{
+    currentUser=null;updateAuthUI();
+  });
+}
+
+function updateAuthUI(){
+  const loginBtn=document.getElementById('login-btn');
+  const logoutBtn=document.getElementById('logout-btn');
+  const userInfo=document.getElementById('user-info');
+  const userName=document.getElementById('user-name');
+  const userLevel=document.getElementById('user-level');
+  if(currentUser&&firebaseConfigured){
+    loginBtn.style.display='none';
+    logoutBtn.style.display='block';
+    userInfo.style.display='flex';
+    userName.textContent=currentUser.displayName||currentUser.email||'Player';
+    userLevel.textContent='Lv.'+gameState.level;
+  } else {
+    loginBtn.style.display='block';
+    logoutBtn.style.display='none';
+    userInfo.style.display='none';
+  }
+}
+
+function onAuthStateChanged(user){
+  currentUser=user;
+  updateAuthUI();
+  if(user){syncOnlineStatus();loadFromFirebase(user.uid);}
+}
+
+// ============================================================
+// STATE MANAGEMENT
+// ============================================================
+function loadState(){
+  const s=localStorage.getItem('mathrpg_v1');
+  if(s){try{const d=JSON.parse(s);gameState={...gameState,...d};}catch(e){}}
+  // Clean up corrupted card data
+  if(!Array.isArray(gameState.cards))gameState.cards=[];
+  gameState.cards=gameState.cards.filter(c=>typeof c==='string'&&c!==''&&c!=null);
+  // Clean up expired boss cooldowns
+  if(gameState.bossCooldowns){
+    const now=Date.now();
+    Object.keys(gameState.bossCooldowns).forEach(k=>{
+      if(gameState.bossCooldowns[k]<=now)delete gameState.bossCooldowns[k];
+    });
+  }
+  // Reset daily if new day
+  const today=new Date().toDateString();
+  if(gameState.lastDailyReset!==today){
+    gameState.dailyCorrect=0;
+    gameState.dailyTasks={correct5:false,correct10:false,streak3:false};
+    gameState.lastDailyReset=today;
+    // Reset daily challenge if new day
+    if(gameState.lastDailyChallenge!==today){
+      gameState.dailyChallengeCompleted=false;
+    }
+    saveState();
+  }
+  updateHUD();updateStreakUI();
+}
+
+function saveState(){
+  localStorage.setItem('mathrpg_v1',JSON.stringify(gameState));
+}
+
+function updateHUD(){
+  const hpPct=Math.max(0,gameState.hp/gameState.maxHp*100);
+  document.getElementById('hp-bar').style.width=hpPct+'%';
+  document.getElementById('hp-text').textContent=Math.round(gameState.hp);
+  const xpPct=gameState.xp/(100*gameState.level)*100;
+  document.getElementById('xp-bar').style.width=Math.min(100,xpPct)+'%';
+  document.getElementById('xp-text').textContent=gameState.xp;
+  document.getElementById('level-text').textContent='Lv.'+gameState.level;
+  document.getElementById('user-level')&&(document.getElementById('user-level').textContent='Lv.'+gameState.level);
+  const cEl=document.getElementById('hud-card-count');
+  if(cEl)cEl.textContent=gameState.cards.length;
+  const mcEl=document.getElementById('menu-card-count');
+  if(mcEl)mcEl.textContent=gameState.cards.length;
+  const acEl=document.getElementById('menu-ach-count');
+  if(acEl){
+    const unlocked=Array.isArray(gameState.unlockedAchievements)?gameState.unlockedAchievements.length:0;
+    acEl.textContent=unlocked;
+  }
+  // Credits display
+  const credEl=document.getElementById('credits-display');
+  if(credEl)credEl.textContent=gameState.credits||0;
+  const hudCredEl=document.getElementById('hud-credits');
+  if(hudCredEl){
+    if((gameState.credits||0)>0)hudCredEl.classList.add('active');
+    else hudCredEl.classList.remove('active');
+  }
+  // Difficulty indicator
+  const diffEl=document.getElementById('hud-difficulty');
+  const diffIcon=document.getElementById('hud-diff-icon');
+  const diffLabel=document.getElementById('hud-diff-label');
+  if(diffEl&&diffIcon&&diffLabel){
+    const diff=gameState.currentDifficulty||1;
+    const icons={1:'⭐',2:'⭐⭐',3:'⭐⭐⭐'};
+    const labels={1:'易',2:'中',3:'難'};
+    diffIcon.textContent=icons[diff]||'⭐';
+    diffLabel.textContent=labels[diff]||'易';
+    diffEl.classList.add('active');
+  }
+}
+
+function updateStreakUI(){
+  const el=document.getElementById('streak-display');
+  const num=document.getElementById('streak-num');
+  if(gameState.streak>=2){
+    el.classList.add('active');
+    num.textContent=gameState.streak;
+  } else {
+    el.classList.remove('active');
+  }
+}
+
+function addXP(amt){
+  gameState.xp+=amt;
+  const needed=100*gameState.level;
+  if(gameState.xp>=needed){
+    gameState.xp-=needed;gameState.level++;
+    sfxLevelUp();showLevelUp();checkAchievements();
+  }
+  saveState();updateHUD();
+  if(currentUser)syncToFirebase();
+}
+
+function loseHP(amt){
+  gameState.hp=Math.max(0,gameState.hp-amt);
+  gameState.streak=0;updateStreakUI();
+  if(gameState.hp<=0){
+    gameState.hp=gameState.maxHp;
+    gameState.xp=Math.max(0,gameState.xp-10);
+  }
+  saveState();updateHUD();
+  if(currentUser)syncToFirebase();
+}
+
+function showLevelUp(){
+  document.getElementById('level-up').style.display='flex';
+  document.getElementById('level-up-info').textContent='等級 '+gameState.level;
+  spawnFireworks();
+  setTimeout(()=>{document.getElementById('level-up').style.display='none';},2500);
+}
+
+function spawnFireworks(){
+  const colors=['#FAAD14','#F5222D','#52C41A','#4A90D9','#722ED1','#FF6B35'];
+  const container=document.createElement('div');
+  container.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:299;overflow:hidden';
+  document.body.appendChild(container);
+  for(let i=0;i<40;i++){
+    const particle=document.createElement('div');
+    const color=colors[Math.floor(Math.random()*colors.length)];
+    const size=4+Math.random()*8;
+    const angle=Math.random()*Math.PI*2;
+    const velocity=100+Math.random()*200;
+    const dx=Math.cos(angle)*velocity;
+    const dy=Math.sin(angle)*velocity;
+    particle.style.cssText=`position:absolute;width:${size}px;height:${size}px;background:${color};border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%)`;
+    container.appendChild(particle);
+    particle.animate([{transform:'translate(-50%,-50%) scale(1)',opacity:1},{transform:`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0)`,opacity:0}],{
+      duration:800+Math.random()*400,
+      easing:'cubic-bezier(0,0.5,0.5,1)'
+    }).onfinish=()=>particle.remove();
+  }
+  setTimeout(()=>container.remove(),2000);
+}
+
+function checkDailyTasks(){
+  // Update daily task progress
+  const dts=dailyTasksState.tasks;
+  dts[0].current=gameState.dailyCorrect;
+  dts[1].current=gameState.dailyCorrect;
+  dts[2].current=gameState.streak;
+  // Check completions and rewards
+  dts.forEach(t=>{
+    if(!t.rewarded&&t.current>=t.target){
+      t.rewarded=true;
+      addXP(t.reward);
+    }
+  });
+  saveState();
+}
+
+function showLevelUpInfo(){}
+
+// ============================================================
+// MENU & PANELS
+// ============================================================
+function showMenu(){
+  const info=document.getElementById('menu-player-info');
+  info.textContent=`Lv.${gameState.level} | 總答題:${gameState.questionsAnswered} | 正確:${gameState.correctAnswers}`;
+  document.getElementById('menu').style.display='flex';
+}
+function closeMenu(){document.getElementById('menu').style.display='none'}
+function returnToMapHub(){closeMenu();game.scene.stop('MainScene');game.scene.start('MapHub');}
+
+function showLeaderboard(){
+  document.getElementById('leaderboard-panel').style.display='flex';
+  renderLeaderboard();
+}
+
+function closeLeaderboard(){document.getElementById('leaderboard-panel').style.display='none'}
+
+function renderLeaderboard(){
+  const list=document.getElementById('leaderboard-list');
+  if(!firebaseConfigured){
+    list.innerHTML='<div style="color:#888;text-align:center;padding:20px">Firebase未配置</div>';
+    return;
+  }
+  getLeaderboardRef().orderByChild('level').limitToLast(20).once('value').then(snap=>{
+    const data=[];
+    snap.forEach(child=>{data.push({uid:child.key,...child.val()});});
+    data.sort((a,b)=>b.level-a.level||b.xp-a.xp);
+    if(data.length===0){
+      list.innerHTML='<div style="color:#888;text-align:center;padding:20px">暫無排行榜數據</div>';return;
+    }
+    list.innerHTML=data.slice(0,20).map((p,i)=>{
+      const rankClass=i===0?'gold':i===1?'silver':i===2?'bronze':'';
+      const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`;
+      return `<div class="lb-row"><span class="lb-rank ${rankClass}">${medal}</span><span class="lb-name">${p.name||'Player'}</span><span class="lb-level">Lv.${p.level}</span><span class="lb-xp">${p.xp||0}XP</span></div>`;
+    }).join('');
+  }).catch(()=>{
+    list.innerHTML='<div style="color:#888;text-align:center;padding:20px">載入失敗</div>';
+  });
+}
+
+function showDailyTasks(){
+  document.getElementById('daily-tasks-panel').style.display='flex';
+  renderDailyTasks();
+}
+
+function closeDailyTasks(){document.getElementById('daily-tasks-panel').style.display='none'}
+
+function renderDailyTasks(){
+  const list=document.getElementById('tasks-list');
+  const dts=dailyTasksState.tasks;
+  list.innerHTML=dts.map(t=>{
+    const pct=Math.min(100,t.current/t.target*100);
+    const done=pct>=100;
+    return `<div class="task-row ${done?'task-complete':''}">
+      <span class="task-icon">${done?'✅':'🎯'}</span>
+      <div class="task-info">
+        <div class="task-name">${t.name}</div>
+        <div class="task-desc">${t.desc}</div>
+        <div style="width:100%;height:4px;background:#2d2d4a;border-radius:2px;margin-top:4px">
+          <div style="width:${pct}%;height:100%;background:${done?'#52C41A':'#4A90D9'};border-radius:2px"></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+        <span class="task-progress">${t.current}/${t.target}</span>
+        <span class="task-reward">+${t.reward}XP</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// SOUND
+// ============================================================
+const AudioCtx=window.AudioContext||window.webkitAudioContext;
+let audioCtx=null;
+function initAudio(){if(!audioCtx)audioCtx=new AudioCtx()}
+function playTone(freq,dur,type='square',vol=.15){
+  try{initAudio();const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type=type;o.frequency.value=freq;
+  g.gain.setValueAtTime(vol,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);
+  o.connect(g);g.connect(audioCtx.destination);
+  o.start();o.stop(audioCtx.currentTime+dur);}catch(e){}
+}
+function sfxCorrect(){playTone(523,.15,'sine',.2);setTimeout(()=>playTone(659,.15,'sine',.2),100);setTimeout(()=>playTone(784,.2,'sine',.2),200);}
+function sfxWrong(){playTone(200,.3,'sawtooth',.15)}
+function sfxLevelUp(){playTone(440,.1,'sine',.2);setTimeout(()=>playTone(554,.1,'sine',.2),100);setTimeout(()=>playTone(659,.1,'sine',.2),200);setTimeout(()=>playTone(880,.3,'sine',.2),300);}
+function sfxStep(){playTone(300,.05,'triangle',.05)}
+function sfxStreak(){playTone(880,.1,'sine',.2);setTimeout(()=>playTone(1100,.15,'sine',.2),80);}
+
+function showToast(msg,color='#fff'){
+  const t=document.createElement('div');
+  t.textContent=msg;
+  t.style.cssText='position:fixed;top:80px;left:50%;transform:translateX(-50%);background:'+color+';color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:toast-anim .4s ease-out';
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(()=>t.remove(),400);},2000);
+}
+
+// ============================================================
+// MATH RENDERING
+// ============================================================
+function renderMath(el,tex){
+  if(typeof katex==='undefined'){el.textContent=tex;return;}
+  el.innerHTML='';
+  const parts=tex.split(/(\$[^$]+\$)/g);
+  parts.forEach(part=>{
+    if(/^\$([^$]+)\$/.test(part)){
+      const math=part.replace(/^\$([^$]+)\$/,'$1');
+      const span=document.createElement('span');
+      try{katex.render(math,span,{throwOnError:false,displayMode:true});}catch(e){span.textContent=part;}
+      el.appendChild(span);
+    } else if(part){
+      el.appendChild(document.createTextNode(part));
+    }
+  });
+}
+function renderMathInline(el,tex){
