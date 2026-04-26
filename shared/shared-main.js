@@ -755,9 +755,10 @@ function updateHUD(){
 function updateStreakUI(){
   const el=document.getElementById('streak-display');
   const num=document.getElementById('streak-num');
+  if(!el) return;
   if(gameState.streak>=2){
     el.classList.add('active');
-    num.textContent=gameState.streak;
+    if(num)num.textContent=gameState.streak;
   } else {
     el.classList.remove('active');
   }
