@@ -56,7 +56,7 @@ class SchoolScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, SCHOOL_COLS * SCHOOL_TILE, SCHOOL_ROWS * SCHOOL_TILE);
 
     const zlEl = document.getElementById('zone-label');
-    if (zlEl) zlEl.textContent = '🏫 學校 — 12個學習室';
+    if (zlEl) zlEl.textContent = '🏫 學校 — 12個教室';
     const bbEl = document.getElementById('back-btn');
     if (bbEl) bbEl.style.display = 'block';
     const ltEl = document.getElementById('loading-text');

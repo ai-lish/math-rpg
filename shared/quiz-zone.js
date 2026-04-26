@@ -2,7 +2,12 @@
 // QUIZ ZONE - Shared quiz logic used by all zone scenes
 // ============================================================
 
-let zqState = {
+var CARD_DROP_CHANCE = 0.18;
+var CARD_RARITY_THRESHOLDS = { common: 0.60, rare: 0.88, epic: 0.98 };
+// recent question IDs to avoid immediate repeats (last 3)
+var ZQ_RECENT = [];
+
+var zqState = {
   active: false,
   room: null,
   question: null,
@@ -27,7 +32,13 @@ function startZoneQuiz(room) {
 }
 
 function zqShowQuestion() {
-  const q = zqState.questions[Math.floor(Math.random() * zqState.questions.length)];
+  var available = zqState.questions;
+  // Avoid showing the same question immediately (unless pool is tiny)
+  var pool = available.length > 3 ? available.filter(function(q) { return !ZQ_RECENT.includes(q.id); }) : available;
+  if (pool.length === 0) pool = available;
+  var q = pool[Math.floor(Math.random() * pool.length)];
+  ZQ_RECENT.push(q.id);
+  if (ZQ_RECENT.length > 3) ZQ_RECENT.shift();
   zqState.question = q;
 
   const roomLabel = document.getElementById('quiz-room-label');
@@ -141,10 +152,13 @@ function closeZoneQuiz() {
 function zqTryDropCard() {
   var allCards = window.CARDS || [];
   if (allCards.length === 0) return;
-  if (Math.random() >= 0.18) return; // 18% drop chance
+  if (Math.random() >= CARD_DROP_CHANCE) return;
 
   var rand = Math.random();
-  var rarity = rand < 0.60 ? 'common' : rand < 0.88 ? 'rare' : rand < 0.98 ? 'epic' : 'legendary';
+  var rarity = rand < CARD_RARITY_THRESHOLDS.common ? 'common'
+             : rand < CARD_RARITY_THRESHOLDS.rare   ? 'rare'
+             : rand < CARD_RARITY_THRESHOLDS.epic   ? 'epic'
+             : 'legendary';
   var pool = allCards.filter(function(c) { return c.rarity === rarity; });
   if (pool.length === 0) return;
 
