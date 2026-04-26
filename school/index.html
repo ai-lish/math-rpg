@@ -4,125 +4,103 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Math RPG - 學校</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: #1A1A2E;
-      font-family: 'Segoe UI', sans-serif;
-      overflow: hidden;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    #game-container {
-      position: relative;
-      width: 100%;
-      max-width: 768px;
-      aspect-ratio: 16/12;
-    }
-    #game-container canvas {
-      width: 100% !important;
-      height: 100% !important;
-    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:#1A1A2E;font-family:'Segoe UI',sans-serif;overflow:hidden;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+    #game-container{position:relative;width:100%;max-width:768px;aspect-ratio:16/12;}
+    #game-container canvas{width:100%!important;height:100%!important;}
     /* HUD */
-    #hud {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      right: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      pointer-events: none;
-      z-index: 10;
-    }
-    .hud-left { display: flex; flex-direction: column; gap: 4px; }
-    .hud-right { display: flex; gap: 8px; align-items: center; }
-    .stat-bar {
-      background: rgba(0,0,0,0.6);
-      border-radius: 8px;
-      padding: 4px 8px;
-      min-width: 100px;
-    }
-    .bar-label { font-size: 10px; color: #aaa; margin-bottom: 2px; }
-    .bar-container { background: #333; height: 8px; border-radius: 4px; overflow: hidden; }
-    .bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
-    #hp-fill { background: linear-gradient(90deg, #f5222d, #ff7875); width: 100%; }
-    #xp-fill { background: linear-gradient(90deg, #faad14, #ffe58f); width: 0%; }
-    .stat-text { font-size: 11px; color: #fff; margin-top: 2px; }
-    .level-badge {
-      background: linear-gradient(135deg, #722ed1, #9254de);
-      color: #fff;
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: bold;
-    }
-    #firebase-status {
-      display: none;
-      padding: 2px 8px;
-      border-radius: 8px;
-      font-size: 10px;
-    }
-    .online { background: #52c41a; color: #fff; }
-    .offline { background: #ff4d4f; color: #fff; }
-    /* Joystick */
-    #joystick-zone {
-      display: none;
-      position: fixed;
-      width: 100px;
-      height: 100px;
-      background: rgba(255,255,255,0.15);
-      border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.3);
-      z-index: 100;
-      touch-action: none;
-    }
-    #joystick-knob {
-      width: 40px;
-      height: 40px;
-      background: rgba(255,255,255,0.5);
-      border-radius: 50%;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-    /* Back button */
-    #back-btn {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      background: rgba(0,0,0,0.6);
-      color: #fff;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 12px;
-      cursor: pointer;
-      z-index: 20;
-    }
+    #hud{position:absolute;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;z-index:10;}
+    .hud-left{display:flex;flex-direction:column;gap:4px;}
+    .hud-right{display:flex;gap:6px;align-items:center;pointer-events:all;}
+    .stat-bar{background:rgba(0,0,0,.6);border-radius:8px;padding:4px 8px;min-width:100px;}
+    .bar-label{font-size:10px;color:#aaa;margin-bottom:2px;}
+    .bar-container{background:#333;height:8px;border-radius:4px;overflow:hidden;}
+    .bar-fill{height:100%;border-radius:4px;transition:width .3s;}
+    #hp-bar{background:linear-gradient(90deg,#f5222d,#ff7875);width:100%;}
+    #xp-bar{background:linear-gradient(90deg,#faad14,#ffe58f);width:0%;}
+    .stat-text{font-size:11px;color:#fff;margin-top:2px;}
+    .level-badge{background:linear-gradient(135deg,#722ed1,#9254de);color:#fff;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:bold;}
+    #firebase-status{display:none;padding:2px 8px;border-radius:8px;font-size:10px;}
+    .online{background:#52c41a;color:#fff;}.offline{background:#ff4d4f;color:#fff;}
+    .hud-btn{background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.25);border-radius:8px;color:#fff;padding:4px 9px;font-size:13px;cursor:pointer;pointer-events:all;}
+    .hud-btn:hover{background:rgba(255,255,255,.15);}
+    #hud-card-badge{background:rgba(114,46,209,.5);border:1px solid rgba(114,46,209,.7);border-radius:10px;padding:3px 8px;font-size:11px;color:#d3adf7;cursor:pointer;pointer-events:all;}
+    /* Streak display */
+    #streak-display{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(255,107,53,.25);border:1px solid rgba(255,107,53,.5);border-radius:12px;padding:3px 12px;font-size:13px;color:#FF6B35;font-weight:bold;display:none;z-index:15;pointer-events:none;}
+    #streak-display.active{display:block;}
     /* Zone label */
-    #zone-label {
-      position: absolute;
-      bottom: 8px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.6);
-      color: #4A90D9;
-      padding: 4px 16px;
-      border-radius: 12px;
-      font-size: 12px;
-      z-index: 10;
-    }
-    /* Loading placeholder */
-    #loading-text {
-      color: #fff;
-      font-size: 16px;
-      text-align: center;
-    }
+    #zone-label{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#4A90D9;padding:4px 16px;border-radius:12px;font-size:12px;z-index:10;pointer-events:none;}
+    /* Back button */
+    #back-btn{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.6);color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;z-index:20;display:none;}
+    /* Joystick */
+    #joystick-zone{display:none;position:fixed;width:100px;height:100px;background:rgba(255,255,255,.15);border-radius:50%;border:2px solid rgba(255,255,255,.3);z-index:100;touch-action:none;align-items:center;justify-content:center;}
+    #joystick-knob{width:40px;height:40px;background:rgba(255,255,255,.5);border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);}
+    /* Achievement toast */
+    #achievement-toast{position:fixed;bottom:70px;right:16px;background:linear-gradient(135deg,#722ED1,#9254DE);border-radius:12px;padding:12px 16px;color:#fff;display:flex;align-items:center;gap:10px;max-width:240px;transform:translateX(280px);transition:transform .4s ease-out;z-index:400;font-size:12px;box-shadow:0 4px 20px rgba(0,0,0,.4);}
+    #achievement-toast.show{transform:translateX(0);}
+    .ach-icon{font-size:20px;}.ach-name{font-weight:bold;font-size:13px;}.ach-desc{opacity:.8;font-size:11px;}
+    /* Level up */
+    #level-up{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:350;display:none;justify-content:center;align-items:center;flex-direction:column;gap:12px;}
+    .level-up-title{font-size:32px;color:#FAAD14;font-weight:bold;text-shadow:0 0 20px rgba(250,173,20,.5);}
+    #level-up-info{font-size:22px;color:#fff;}
+    /* Quiz panel */
+    #quiz-panel{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:300;display:none;justify-content:center;align-items:center;padding:12px;}
+    .quiz-inner{background:#1e2035;border-radius:16px;padding:20px;max-width:480px;width:100%;max-height:92vh;overflow-y:auto;border:1px solid rgba(255,255,255,.12);}
+    .quiz-header{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.1);}
+    #quiz-room-label{font-size:15px;font-weight:bold;color:#fff;flex:1;}
+    #quiz-diff{font-size:13px;color:#FAAD14;}
+    #quiz-question{font-size:14px;color:#ddd;margin-bottom:16px;line-height:1.7;}
+    #quiz-question .katex{font-size:1.1em;}
+    .quiz-opt-btn{display:flex;align-items:flex-start;gap:8px;width:100%;padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:8px;color:#fff;font-size:13px;text-align:left;cursor:pointer;transition:background .15s;}
+    .quiz-opt-btn:hover:not(:disabled){background:rgba(74,144,217,.25);border-color:rgba(74,144,217,.5);}
+    .quiz-opt-btn.correct{background:rgba(82,196,26,.25)!important;border-color:#52C41A!important;}
+    .quiz-opt-btn.wrong{background:rgba(245,34,45,.25)!important;border-color:#F5222D!important;}
+    .quiz-opt-btn:disabled{cursor:default;opacity:.85;}
+    .opt-key{min-width:18px;font-weight:bold;color:#FAAD14;}
+    .opt-text .katex{font-size:1em;}
+    #quiz-feedback{display:none;padding:10px 14px;border-radius:8px;margin:12px 0;align-items:center;gap:10px;}
+    .quiz-feedback-correct{background:rgba(82,196,26,.2);border:1px solid rgba(82,196,26,.4);color:#95de64;}
+    .quiz-feedback-wrong{background:rgba(245,34,45,.2);border:1px solid rgba(245,34,45,.4);color:#ff7875;}
+    #quiz-fb-icon{font-size:22px;}
+    #quiz-fb-msg{font-size:13px;line-height:1.5;}
+    .quiz-actions{display:flex;gap:8px;margin-top:14px;}
+    #quiz-more-btn{flex:1;padding:10px;background:#4A90D9;border:none;border-radius:8px;color:#fff;font-size:13px;cursor:pointer;font-weight:bold;}
+    #quiz-more-btn:hover{background:#5A9FE3;}
+    #quiz-close-btn{flex:1;padding:10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;}
+    #quiz-close-btn:hover{background:rgba(255,255,255,.18);}
+    /* Overlay panels */
+    .panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:310;display:none;justify-content:center;align-items:center;padding:16px;}
+    .panel-inner{background:#1e2035;border-radius:16px;padding:20px;max-width:400px;width:100%;max-height:82vh;overflow-y:auto;border:1px solid rgba(255,255,255,.12);}
+    .panel-inner h3{color:#fff;font-size:16px;margin-bottom:16px;text-align:center;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.1);}
+    .panel-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;text-align:left;}
+    .panel-btn:hover{background:rgba(255,255,255,.14);}
+    .panel-close-btn{width:100%;padding:10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;margin-top:8px;}
+    .panel-close-btn:hover{background:rgba(255,255,255,.18);}
+    #menu-player-info{font-size:12px;color:#aaa;margin-bottom:14px;text-align:center;}
+    .panel-empty{color:#888;text-align:center;padding:20px;font-size:13px;}
+    /* Leaderboard */
+    .lb-row{display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;color:#ddd;}
+    .lb-rank{min-width:28px;font-weight:bold;}.lb-name{flex:1;}.lb-level{color:#722ED1;}.lb-xp{color:#FAAD14;}
+    .gold{color:#FFD700;}.silver{color:#C0C0C0;}.bronze{color:#CD7F32;}
+    /* Daily tasks */
+    .task-row{display:flex;align-items:center;gap:8px;padding:10px;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;}
+    .task-icon{font-size:18px;}.task-info{flex:1;}.task-name{font-weight:bold;color:#fff;font-size:13px;}.task-desc{color:#aaa;font-size:11px;}
+    .task-progress{color:#FAAD14;font-size:12px;font-weight:bold;}.task-reward{color:#52C41A;font-size:11px;}
+    .task-complete .task-name{color:#52C41A;}
+    /* Cards */
+    .card-item{display:flex;align-items:center;gap:10px;padding:10px;margin-bottom:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;}
+    .card-icon{font-size:24px;}.card-name{font-weight:bold;font-size:13px;}.card-effect{color:#aaa;font-size:11px;}
+    /* Achievements */
+    .ach-item{display:flex;align-items:center;gap:8px;padding:8px;margin-bottom:6px;border-radius:8px;font-size:12px;}
+    .ach-done{background:rgba(82,196,26,.12);border:1px solid rgba(82,196,26,.3);}
+    .ach-locked{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);opacity:.6;}
+    .ach-icon-sm{font-size:18px;}.ach-info{flex:1;}.ach-name-sm{font-weight:bold;color:#fff;}.ach-desc-sm{color:#aaa;font-size:11px;}
+    .ach-reward{color:#52C41A;font-size:11px;white-space:nowrap;}
+    @keyframes toast-anim{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
   </style>
 </head>
 <body>
@@ -131,37 +109,117 @@
       <div class="hud-left">
         <div class="stat-bar">
           <div class="bar-label">HP</div>
-          <div class="bar-container"><div id="hp-fill" class="bar-fill"></div></div>
-          <div class="stat-text"><span id="hp-text">100</span> / <span id="max-hp-text">100</span></div>
+          <div class="bar-container"><div id="hp-bar" class="bar-fill"></div></div>
+          <div class="stat-text"><span id="hp-text">100</span> / 100</div>
         </div>
         <div class="stat-bar">
           <div class="bar-label">XP</div>
-          <div class="bar-container"><div id="xp-fill" class="bar-fill"></div></div>
-          <div class="stat-text"><span id="xp-text">0</span> / <span id="xp-needed">100</span></div>
+          <div class="bar-container"><div id="xp-bar" class="bar-fill"></div></div>
+          <div class="stat-text"><span id="xp-text">0</span> XP</div>
         </div>
       </div>
       <div class="hud-right">
         <span id="firebase-status">離線</span>
         <span class="level-badge" id="level-text">Lv.1</span>
+        <span id="hud-card-badge" onclick="showCardsPanel()" title="我的卡牌">🃏 <span id="hud-card-count">0</span></span>
+        <button class="hud-btn" onclick="showMenu()">☰</button>
       </div>
     </div>
+    <div id="streak-display">🔥 <span id="streak-num">0</span> 連勝</div>
     <div id="back-btn" onclick="returnToHub()">🏠 返回大廳</div>
-    <div id="zone-label">🏫 學校 (Phase 2)</div>
-    <div id="loading-text">載入中... (Phase 2 完成後可玩)</div>
+    <div id="zone-label">🏫 學校</div>
+    <div id="loading-text" style="color:#fff;font-size:16px;text-align:center">載入中...</div>
   </div>
+
   <div id="joystick-zone"><div id="joystick-knob"></div></div>
+
+  <!-- Quiz panel -->
+  <div id="quiz-panel">
+    <div class="quiz-inner">
+      <div class="quiz-header">
+        <span id="quiz-room-label">...</span>
+        <span id="quiz-diff">⭐</span>
+      </div>
+      <div id="quiz-question"></div>
+      <div id="quiz-options"></div>
+      <div id="quiz-feedback">
+        <span id="quiz-fb-icon"></span>
+        <span id="quiz-fb-msg"></span>
+      </div>
+      <div class="quiz-actions">
+        <button id="quiz-more-btn" onclick="continueZoneQuiz()" style="display:none">再答一題</button>
+        <button id="quiz-close-btn" onclick="closeZoneQuiz()">回到地圖</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Achievement toast -->
+  <div id="achievement-toast"><span class="ach-icon"></span><div><div class="ach-name"></div><div class="ach-desc"></div></div></div>
+
+  <!-- Level up overlay -->
+  <div id="level-up">
+    <div class="level-up-title">🎉 升級了！</div>
+    <div id="level-up-info">等級 2</div>
+  </div>
+
+  <!-- Menu panel -->
+  <div id="menu" class="panel-overlay">
+    <div class="panel-inner">
+      <h3>☰ 選單</h3>
+      <div id="menu-player-info"></div>
+      <button class="panel-btn" onclick="showLeaderboard()">🏆 排行榜</button>
+      <button class="panel-btn" onclick="showDailyTasks()">📋 每日任務</button>
+      <button class="panel-btn" onclick="closeMenu();showCardsPanel()">🃏 我的卡牌 (<span id="menu-card-count">0</span>)</button>
+      <button class="panel-btn" onclick="closeMenu();showAchievementsPanel()">🏅 成就 (<span id="menu-ach-count">0</span>)</button>
+      <button class="panel-close-btn" onclick="closeMenu()">關閉</button>
+    </div>
+  </div>
+
+  <!-- Leaderboard panel -->
+  <div id="leaderboard-panel" class="panel-overlay">
+    <div class="panel-inner">
+      <h3>🏆 排行榜</h3>
+      <div id="leaderboard-list"><div class="panel-empty">載入中...</div></div>
+      <button class="panel-close-btn" onclick="closeLeaderboard()">關閉</button>
+    </div>
+  </div>
+
+  <!-- Daily tasks panel -->
+  <div id="daily-tasks-panel" class="panel-overlay">
+    <div class="panel-inner">
+      <h3>📋 每日任務</h3>
+      <div id="tasks-list"></div>
+      <button class="panel-close-btn" onclick="closeDailyTasks()">關閉</button>
+    </div>
+  </div>
+
+  <!-- Cards panel -->
+  <div id="cards-panel" class="panel-overlay">
+    <div class="panel-inner">
+      <h3>🃏 我的卡牌</h3>
+      <div id="cards-list"></div>
+      <button class="panel-close-btn" onclick="closeCardsPanel()">關閉</button>
+    </div>
+  </div>
+
+  <!-- Achievements panel -->
+  <div id="achievements-panel" class="panel-overlay">
+    <div class="panel-inner">
+      <h3>🏅 成就</h3>
+      <div id="achievements-list"></div>
+      <button class="panel-close-btn" onclick="closeAchievementsPanel()">關閉</button>
+    </div>
+  </div>
 
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   <script src="../shared/shared-main.js"></script>
+  <script src="../shared/quiz-zone.js"></script>
   <script src="school-main.js"></script>
   <script>
-    // Init audio on first interaction
     document.addEventListener('click', () => initAudio(), { once: true });
     document.addEventListener('touchstart', () => initAudio(), { once: true });
-    
-    // Load state and update HUD
     loadState();
     updateHUD();
   </script>
