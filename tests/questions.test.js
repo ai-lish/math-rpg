@@ -8,6 +8,7 @@
  */
 
 const { loadSharedMain } = require('./loadShared');
+const { lazyWindowArray } = require('./testHelpers');
 
 const VALID_ANSWER_KEYS = new Set(['A', 'B', 'C', 'D']);
 const VALID_DIFFICULTIES = new Set([1, 2, 3]);
@@ -86,80 +87,24 @@ function assertQuestionsValid(questions, label) {
 // ---------------------------------------------------------------------------
 
 describe('QUESTIONS_ORIGINAL', () => {
-  let qs;
-  beforeAll(() => { qs = window.__QUESTIONS_ORIGINAL; });
-  test('is exported and non-empty', () => expect(qs.length).toBeGreaterThan(0));
-
-  assertQuestionsValid(
-    // We call with a lazy proxy because window.__QUESTIONS_ORIGINAL is not
-    // available until loadSharedMain() runs in beforeAll above.
-    // Use a wrapper to defer access.
-    new Proxy([], {
-      get(_, prop) {
-        if (prop === 'length') return window.__QUESTIONS_ORIGINAL.length;
-        if (prop === 'forEach') return fn => window.__QUESTIONS_ORIGINAL.forEach(fn);
-        if (prop === 'map') return fn => window.__QUESTIONS_ORIGINAL.map(fn);
-        return window.__QUESTIONS_ORIGINAL[prop];
-      }
-    }),
-    'QUESTIONS_ORIGINAL'
-  );
+  test('is exported and non-empty', () => expect(window.__QUESTIONS_ORIGINAL.length).toBeGreaterThan(0));
+  assertQuestionsValid(lazyWindowArray('__QUESTIONS_ORIGINAL'), 'QUESTIONS_ORIGINAL');
 });
 
 describe('QUESTIONS_PHASE1B', () => {
-  assertQuestionsValid(
-    new Proxy([], {
-      get(_, prop) {
-        if (prop === 'length') return window.__QUESTIONS_PHASE1B.length;
-        if (prop === 'forEach') return fn => window.__QUESTIONS_PHASE1B.forEach(fn);
-        if (prop === 'map') return fn => window.__QUESTIONS_PHASE1B.map(fn);
-        return window.__QUESTIONS_PHASE1B[prop];
-      }
-    }),
-    'QUESTIONS_PHASE1B'
-  );
+  assertQuestionsValid(lazyWindowArray('__QUESTIONS_PHASE1B'), 'QUESTIONS_PHASE1B');
 });
 
 describe('QUESTIONS_PHASE2', () => {
-  assertQuestionsValid(
-    new Proxy([], {
-      get(_, prop) {
-        if (prop === 'length') return window.__QUESTIONS_PHASE2.length;
-        if (prop === 'forEach') return fn => window.__QUESTIONS_PHASE2.forEach(fn);
-        if (prop === 'map') return fn => window.__QUESTIONS_PHASE2.map(fn);
-        return window.__QUESTIONS_PHASE2[prop];
-      }
-    }),
-    'QUESTIONS_PHASE2'
-  );
+  assertQuestionsValid(lazyWindowArray('__QUESTIONS_PHASE2'), 'QUESTIONS_PHASE2');
 });
 
 describe('QUESTIONS_PHASE4', () => {
-  assertQuestionsValid(
-    new Proxy([], {
-      get(_, prop) {
-        if (prop === 'length') return window.__QUESTIONS_PHASE4.length;
-        if (prop === 'forEach') return fn => window.__QUESTIONS_PHASE4.forEach(fn);
-        if (prop === 'map') return fn => window.__QUESTIONS_PHASE4.map(fn);
-        return window.__QUESTIONS_PHASE4[prop];
-      }
-    }),
-    'QUESTIONS_PHASE4'
-  );
+  assertQuestionsValid(lazyWindowArray('__QUESTIONS_PHASE4'), 'QUESTIONS_PHASE4');
 });
 
 describe('DAILY_CHALLENGE_QUESTIONS', () => {
-  assertQuestionsValid(
-    new Proxy([], {
-      get(_, prop) {
-        if (prop === 'length') return window.__DAILY_CHALLENGE_QUESTIONS.length;
-        if (prop === 'forEach') return fn => window.__DAILY_CHALLENGE_QUESTIONS.forEach(fn);
-        if (prop === 'map') return fn => window.__DAILY_CHALLENGE_QUESTIONS.map(fn);
-        return window.__DAILY_CHALLENGE_QUESTIONS[prop];
-      }
-    }),
-    'DAILY_CHALLENGE_QUESTIONS'
-  );
+  assertQuestionsValid(lazyWindowArray('__DAILY_CHALLENGE_QUESTIONS'), 'DAILY_CHALLENGE_QUESTIONS');
 });
 
 // ---------------------------------------------------------------------------

@@ -10,36 +10,7 @@
  */
 
 const { loadSharedMain } = require('./loadShared');
-
-const INITIAL_STATE = {
-  hp: 100, maxHp: 100, xp: 0, level: 1,
-  questionsAnswered: 0, correctAnswers: 0,
-  streak: 0, maxStreak: 0,
-  dailyCorrect: 0,
-  dailyTasks: { correct5: false, correct10: false, streak3: false },
-  lastDailyReset: null,
-  cards: [],
-  unlockedAchievements: [],
-  roomsVisited: [],
-  completedDailyTasks: 0,
-  arenaParticipated: 0, arenaPerfect: 0, arenaTop10: 0, arenaScores: [],
-  wrongAnswers: 0, hpLowCorrect: 0, hpNoLossStreak: 0,
-  speedAnswers: 0, morningAnswers: 0,
-  roomCorrect: {},
-  friendCode: '', friends: [], sharedCode: 0,
-  bossesDefeated: 0, bossPerfect: 0,
-  bossCooldowns: {}, bossDefeatedSet: [],
-  lastDailyChallenge: '', dailyChallengeCompleted: false, dailyChallengeStreak: 0,
-  currentDifficulty: 1, consecutiveCorrect: 0, consecutiveWrong: 0,
-  loginStreak: 0, lastLoginDate: '',
-  credits: 0, tutorialDone: false, selectedAvatar: 1,
-};
-
-function resetGameState(overrides = {}) {
-  const gs = window.gameState;
-  Object.keys(gs).forEach(k => delete gs[k]);
-  Object.assign(gs, JSON.parse(JSON.stringify({ ...INITIAL_STATE, ...overrides })));
-}
+const { resetGameState } = require('./testHelpers');
 
 /** Find an achievement by id from the exported array */
 function getAch(id) {
@@ -54,6 +25,7 @@ beforeEach(() => {
   resetGameState({ lastDailyReset: new Date().toDateString() });
   localStorage.clear();
 });
+
 
 // ---------------------------------------------------------------------------
 // ACHIEVEMENTS data presence
