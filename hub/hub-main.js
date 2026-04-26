@@ -126,7 +126,7 @@ class MapHubScene extends Phaser.Scene {
 
   drawMap() {
     this.floorLayer = this.add.group();
-    this.wallLayer = this.add.group();
+    this.wallLayer = this.physics.add.staticGroup();
     
     for (let y = 0; y < HUB_ROWS; y++) {
       for (let x = 0; x < HUB_COLS; x++) {
@@ -135,8 +135,7 @@ class MapHubScene extends Phaser.Scene {
         const py = y * HUB_TILE + HUB_TILE / 2;
         
         if (tile === 1) {
-          const wall = this.add.sprite(px, py, 'hub_wall');
-          this.wallLayer.add(wall);
+          this.wallLayer.create(px, py, 'hub_wall');
         } else {
           const floor = this.add.sprite(px, py, 'hub_floor');
           this.floorLayer.add(floor);
@@ -199,8 +198,10 @@ class MapHubScene extends Phaser.Scene {
       label.setOrigin(0.5);
       
       // Make marker a zone trigger
-      const zoneCollider = this.add.rectangle(px, py, HUB_TILE, HUB_TILE);
-      zoneCollider.visible = false;
+      const zoneCollider = this.add.zone(px, py, HUB_TILE, HUB_TILE);
+      this.physics.world.enable(zoneCollider);
+      zoneCollider.body.setAllowGravity(false);
+      zoneCollider.body.setImmovable(true);
       zoneCollider.zoneData = zone;
       
       this.physics.add.overlap(this.player, zoneCollider, (player, zoneObj) => {
