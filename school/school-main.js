@@ -150,6 +150,22 @@ class SchoolScene extends Phaser.Scene {
 
   createRoomMarkers() {
     this.roomZones = [];
+    this.roomBtns = [];
+
+    // Camera-relative conversion: world -> screen px
+    this._worldToScreen = (wx, wy) => {
+      const cam = this.cameras.main;
+      const sx = (wx - cam.scrollX) * cam.zoom;
+      const sy = (wy - cam.scrollY) * cam.zoom;
+      const gc = document.getElementById('game-container');
+      if (!gc) return { sx, sy };
+      const rect = gc.getBoundingClientRect();
+      return { sx: rect.left + sx, sy: rect.top + sy };
+    };
+
+    // Remove stale buttons
+    document.querySelectorAll('.room-enter-btn').forEach(b => b.remove());
+
     SCHOOL_ROOMS.forEach(room => {
       const px = room.tileX * SCHOOL_TILE + SCHOOL_TILE / 2;
       const py = room.tileY * SCHOOL_TILE + SCHOOL_TILE / 2;
@@ -176,6 +192,32 @@ class SchoolScene extends Phaser.Scene {
         }
       });
       this.roomZones.push(zone);
+
+      // HTML overlay button for mobile (bigger touch target)
+      const gc = document.getElementById('game-container');
+      if (gc) {
+        const btn = document.createElement('button');
+        btn.className = 'room-enter-btn';
+        btn.textContent = room.icon + ' 點擊進入';
+        btn.style.display = 'none';
+        btn.style.position = 'absolute';
+        btn.style.zIndex = '20';
+        btn.style.pointerEvents = 'all';
+        btn.style.transform = 'translate(-50%, -50%)';
+        btn.style.whiteSpace = 'nowrap';
+        const colorHex = '#' + room.color.toString(16).padStart(6, '0');
+        btn.style.background = colorHex + 'ee';
+        btn.style.border = '2px solid #fff';
+        btn.style.color = '#fff';
+        btn.style.fontWeight = 'bold';
+        btn.style.padding = '8px 14px';
+        btn.style.borderRadius = '16px';
+        btn.style.fontSize = '12px';
+        btn.style.boxShadow = '0 2px 10px rgba(0,0,0,0.5)';
+        btn.onclick = () => startZoneQuiz(room);
+        gc.appendChild(btn);
+        this.roomBtns.push({ btn, room, px, py });
+      }
     });
   }
 
@@ -283,6 +325,22 @@ class SchoolScene extends Phaser.Scene {
 
     if ((vx !== 0 || vy !== 0) && Math.random() < 0.015) sfxStep && sfxStep();
     this.player.setAlpha((vx !== 0 || vy !== 0) ? (0.8 + Math.sin(this.time.now / 100) * 0.2) : 1);
+
+    // ---- Mobile room button overlay ----
+    const NEAR_DIST = SCHOOL_TILE * 2.2;
+    if (this.roomBtns) {
+      this.roomBtns.forEach(({ btn, room, px, py }) => {
+        const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, px, py);
+        if (dist < NEAR_DIST) {
+          const { sx, sy } = this._worldToScreen(px, py);
+          btn.style.left = sx + 'px';
+          btn.style.top = (sy - SCHOOL_TILE * 0.6) + 'px';
+          btn.style.display = 'block';
+        } else {
+          btn.style.display = 'none';
+        }
+      });
+    }
   }
 }
 

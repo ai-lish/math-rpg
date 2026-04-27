@@ -69,6 +69,11 @@
     }
     .online { background: #52c41a; color: #fff; }
     .offline { background: #ff4d4f; color: #fff; }
+    #login-btn { background: #4A90D9; border-color: #4A90D9; }
+    #logout-btn { background: rgba(0,0,0,.6); border-color: rgba(255,255,255,.25); font-size: 11px; padding: 2px 8px; }
+    #user-info { background: rgba(0,0,0,.5); padding: 2px 8px; border-radius: 8px; display: flex; align-items: center; gap: 6px; }
+    #user-name { color: #fff; font-size: 12px; }
+    #user-level { color: #FAAD14; font-size: 11px; }
     /* Joystick */
     #joystick-zone {
       display: none;
@@ -118,6 +123,21 @@
       font-size: 12px;
       z-index: 10;
     }
+    /* Zone enter button - mobile friendly overlay */
+    .zone-enter-btn {
+      background: rgba(250, 173, 20, 0.92);
+      border: 2px solid #fff;
+      color: #1A1A2E;
+      font-weight: bold;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 13px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .zone-enter-btn:hover { background: #FFD700; }
   </style>
 </head>
 <body>
@@ -138,6 +158,12 @@
       <div class="hud-right">
         <span id="firebase-status">離線</span>
         <span class="level-badge" id="level-text">Lv.1</span>
+        <button id="login-btn" class="hud-btn" onclick="signIn()" style="display:none">🔑 登入</button>
+        <div id="user-info" style="display:none;">
+          <span id="user-name"></span>
+          <span id="user-level"></span>
+          <button id="logout-btn" class="hud-btn" onclick="signOut()">登出</button>
+        </div>
       </div>
     </div>
     <div id="back-btn" onclick="returnToHub()">🏠 返回大廳</div>
@@ -154,6 +180,10 @@
     // Init audio on first interaction
     document.addEventListener('click', () => initAudio(), { once: true });
     document.addEventListener('touchstart', () => initAudio(), { once: true });
+    loadState();
+    updateHUD();
+    if (auth) auth.onAuthStateChanged(onAuthStateChanged);
+    updateAuthUI();
   </script>
 </body>
 </html>

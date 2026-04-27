@@ -169,15 +169,31 @@ class MapHubScene extends Phaser.Scene {
 
   createZoneMarkers() {
     this.zoneLabels = [];
-    
+    this.nearZone = null;
+    this.zoneBtns = []; // HTML overlay buttons
+
+    // Camera-relative conversion: world -> screen px
+    this._worldToScreen = (wx, wy) => {
+      const cam = this.cameras.main;
+      const sx = (wx - cam.scrollX) * cam.zoom;
+      const sy = (wy - cam.scrollY) * cam.zoom;
+      const gc = document.getElementById('game-container');
+      if (!gc) return { sx, sy };
+      const rect = gc.getBoundingClientRect();
+      return { sx: rect.left + sx, sy: rect.top + sy };
+    };
+
+    // Remove any stale buttons
+    document.querySelectorAll('.zone-enter-btn').forEach(b => b.remove());
+
     ZONES.forEach((zone, i) => {
       const px = zone.tileX * HUB_TILE + HUB_TILE / 2;
       const py = zone.tileY * HUB_TILE + HUB_TILE / 2;
-      
+
       // Zone marker sprite
       const textureKey = zone.tileX === 3 ? 'zone_school' : 'zone_algebra';
       const marker = this.add.sprite(px, py, textureKey);
-      
+
       // Pulsing animation
       this.tweens.add({
         targets: marker,
@@ -187,7 +203,7 @@ class MapHubScene extends Phaser.Scene {
         repeat: -1,
         ease: 'Sine.easeInOut'
       });
-      
+
       // Zone label above marker
       const label = this.add.text(px, py - HUB_TILE, zone.label, {
         fontSize: '14px',
@@ -196,17 +212,34 @@ class MapHubScene extends Phaser.Scene {
         padding: { x: 8, y: 4 }
       });
       label.setOrigin(0.5);
-      
+
       // Make marker a zone trigger
       const zoneCollider = this.add.zone(px, py, HUB_TILE, HUB_TILE);
       this.physics.world.enable(zoneCollider);
       zoneCollider.body.setAllowGravity(false);
       zoneCollider.body.setImmovable(true);
       zoneCollider.zoneData = zone;
-      
+
       this.physics.add.overlap(this.player, zoneCollider, (player, zoneObj) => {
         this.enterZone(zoneObj.zoneData);
       });
+
+      // Create HTML overlay button for mobile (hidden by default)
+      const gc = document.getElementById('game-container');
+      if (gc) {
+        const btn = document.createElement('button');
+        btn.className = 'zone-enter-btn';
+        btn.textContent = zone.label + ' 點擊進入';
+        btn.style.display = 'none';
+        btn.style.position = 'absolute';
+        btn.style.zIndex = '20';
+        btn.style.pointerEvents = 'all';
+        btn.style.transform = 'translateX(-50%)';
+        btn.style.whiteSpace = 'nowrap';
+        btn.onclick = () => this.enterZone(zone);
+        gc.appendChild(btn);
+        this.zoneBtns.push({ btn, zone, px, py });
+      }
     });
   }
 
@@ -302,38 +335,56 @@ class MapHubScene extends Phaser.Scene {
     const speed = 150;
     let vx = 0;
     let vy = 0;
-    
+
     // Keyboard input
     if (this.cursors.left.isDown || this.wasd.A.isDown) vx = -1;
     else if (this.cursors.right.isDown || this.wasd.D.isDown) vx = 1;
-    
+
     if (this.cursors.up.isDown || this.wasd.W.isDown) vy = -1;
     else if (this.cursors.down.isDown || this.wasd.S.isDown) vy = 1;
-    
+
     // Joystick input (overrides keyboard if active)
     if (Math.abs(this.joystick.x) > 0.1 || Math.abs(this.joystick.y) > 0.1) {
       vx = this.joystick.x;
       vy = this.joystick.y;
     }
-    
+
     // Normalize diagonal movement
     if (vx !== 0 && vy !== 0) {
       const len = Math.sqrt(vx * vx + vy * vy);
       vx /= len;
       vy /= len;
     }
-    
+
     this.player.setVelocity(vx * speed, vy * speed);
-    
+
     // Update player direction
     if (vx < 0) this.player.setFlipX(true);
     else if (vx > 0) this.player.setFlipX(false);
-    
+
     // Walking animation
     if (vx !== 0 || vy !== 0) {
       this.player.setAlpha(0.8 + Math.sin(this.time.now / 100) * 0.2);
     } else {
       this.player.setAlpha(1);
+    }
+
+    // ---- Mobile zone button overlay ----
+    const NEAR_DIST = HUB_TILE * 1.8; // trigger distance
+    const gc = document.getElementById('game-container');
+    if (gc && this.zoneBtns && this.zoneBtns.length > 0) {
+      this.zoneBtns.forEach(({ btn, zone, px, py }) => {
+        const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, px, py);
+        if (dist < NEAR_DIST) {
+          // Show button above zone marker, camera-relative
+          const { sx, sy } = this._worldToScreen(px, py - HUB_TILE * 1.2);
+          btn.style.left = sx + 'px';
+          btn.style.top = sy + 'px';
+          btn.style.display = 'block';
+        } else {
+          btn.style.display = 'none';
+        }
+      });
     }
   }
 }

@@ -69,6 +69,13 @@
     }
     .online { background: #52c41a; color: #fff; }
     .offline { background: #ff4d4f; color: #fff; }
+    .hud-btn { background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.25); border-radius: 8px; color: #fff; padding: 4px 9px; font-size: 13px; cursor: pointer; pointer-events: all; }
+    .hud-btn:hover { background: rgba(255,255,255,.15); }
+    #login-btn { background: #4A90D9; border-color: #4A90D9; }
+    #logout-btn { background: rgba(0,0,0,.6); border-color: rgba(255,255,255,.25); font-size: 11px; padding: 2px 8px; }
+    #user-info { background: rgba(0,0,0,.5); padding: 2px 8px; border-radius: 8px; display: flex; align-items: center; gap: 6px; }
+    #user-name { color: #fff; font-size: 12px; }
+    #user-level { color: #FAAD14; font-size: 11px; }
     /* Joystick */
     #joystick-zone {
       display: none;
@@ -138,6 +145,12 @@
       <div class="hud-right">
         <span id="firebase-status">離線</span>
         <span class="level-badge" id="level-text">Lv.1</span>
+        <button id="login-btn" class="hud-btn" onclick="signIn()" style="display:none">🔑 登入</button>
+        <div id="user-info" style="display:none;">
+          <span id="user-name"></span>
+          <span id="user-level"></span>
+          <button id="logout-btn" class="hud-btn" onclick="signOut()">登出</button>
+        </div>
       </div>
     </div>
     <div id="back-btn" onclick="returnToHub()">🏠 返回大廳</div>
@@ -154,6 +167,10 @@
     // Init audio on first interaction
     document.addEventListener('click', () => initAudio(), { once: true });
     document.addEventListener('touchstart', () => initAudio(), { once: true });
+    loadState();
+    updateHUD();
+    if (auth) auth.onAuthStateChanged(onAuthStateChanged);
+    updateAuthUI();
   </script>
 </body>
 </html>
