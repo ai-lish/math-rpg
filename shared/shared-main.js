@@ -786,6 +786,20 @@ function loseHP(amt){
   if(currentUser)syncToFirebase();
 }
 
+function addCredits(amount){
+  gameState.credits=(gameState.credits||0)+Math.max(0,Math.round(amount));
+  saveState();updateHUD();
+  if(currentUser)syncToFirebase();
+}
+
+function spendCredits(amount){
+  if((gameState.credits||0)<amount)return false;
+  gameState.credits-=amount;
+  saveState();updateHUD();
+  if(currentUser)syncToFirebase();
+  return true;
+}
+
 function showLevelUp(){
   const luEl=document.getElementById('level-up');
   const luInfoEl=document.getElementById('level-up-info');
@@ -978,6 +992,8 @@ window.loadState = loadState;
 window.saveState = saveState;
 window.addXP = addXP;
 window.loseHP = loseHP;
+window.addCredits = addCredits;
+window.spendCredits = spendCredits;
 window.showToast = showToast;
 window.checkAchievements = checkAchievements;
 window.gameState = gameState;

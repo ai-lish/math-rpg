@@ -66,6 +66,8 @@ if (typeof checkRoomVisit !== 'undefined') window.checkRoomVisit = checkRoomVisi
 if (typeof hasAchievement !== 'undefined') window.hasAchievement = hasAchievement;
 if (typeof checkDailyTasks !== 'undefined') window.checkDailyTasks = checkDailyTasks;
 if (typeof updateStreakUI !== 'undefined') window.updateStreakUI = updateStreakUI;
+if (typeof addCredits !== 'undefined') window.addCredits = addCredits;
+if (typeof spendCredits !== 'undefined') window.spendCredits = spendCredits;
 
 // Patch loadState so that window.gameState stays in sync with the internal
 // gameState variable after loadState() reassigns it via object spread.
