@@ -12,22 +12,33 @@ var zqState = {
   room: null,
   question: null,
   questions: [],
+  creditReward: 0,   // credits awarded per correct answer (0 = none)
+  onCorrect: null,   // optional callback(roomId) called after a correct answer
+  onWrong: null,     // optional callback(roomId) called after a wrong answer
 };
 
 function startZoneQuiz(room) {
   if (zqState.active) return;
-  const allQ = window.ALL_QUESTIONS || [];
-  const topicQ = allQ.filter(function(q) { return q.topic === room.topic; });
+  var allQ = window.ALL_QUESTIONS || [];
+  var topicQ = allQ.filter(function(q) {
+    if (room.topic && q.topic !== room.topic) return false;
+    if (room.diffMin && q.difficulty < room.diffMin) return false;
+    if (room.diffMax && q.difficulty > room.diffMax) return false;
+    return true;
+  });
   if (topicQ.length === 0) { showToast('此區暫無題目', '#888'); return; }
 
   zqState.active = true;
   zqState.room = room;
   zqState.questions = topicQ;
+  zqState.creditReward = room.creditReward || 0;
+  zqState.onCorrect = room.onCorrect || null;
+  zqState.onWrong = room.onWrong || null;
 
   checkRoomVisit(room.roomId);
   zqShowQuestion();
 
-  const panel = document.getElementById('quiz-panel');
+  var panel = document.getElementById('quiz-panel');
   if (panel) panel.style.display = 'flex';
 }
 
@@ -107,13 +118,19 @@ function answerZoneQuiz(choice) {
 
     var xpGain = 20 + (q.difficulty - 1) * 10;
     addXP(xpGain);
+    if (zqState.creditReward > 0 && typeof addCredits === 'function') {
+      addCredits(zqState.creditReward);
+      showToast('✅ 答對！ +' + xpGain + ' XP  +' + zqState.creditReward + ' 學分', '#52C41A');
+    }
     sfxCorrect && sfxCorrect();
     checkDailyTasks();
     checkAchievements();
     zqTryDropCard();
+    if (zqState.onCorrect) zqState.onCorrect(zqState.room.roomId);
 
     if (fbIcon) fbIcon.textContent = '✅';
-    if (fbMsg) fbMsg.textContent = '答對了！ +' + xpGain + ' XP';
+    var creditMsg = zqState.creditReward > 0 ? '  +' + zqState.creditReward + ' 學分' : '';
+    if (fbMsg) fbMsg.textContent = '答對了！ +' + xpGain + ' XP' + creditMsg;
     if (feedbackEl) { feedbackEl.className = 'quiz-feedback quiz-feedback-correct'; feedbackEl.style.display = 'flex'; }
 
     // Streak sound
@@ -125,6 +142,7 @@ function answerZoneQuiz(choice) {
     loseHP(10);
     sfxWrong && sfxWrong();
     checkAchievements();
+    if (zqState.onWrong) zqState.onWrong(zqState.room.roomId);
 
     if (fbIcon) fbIcon.textContent = '❌';
     if (fbMsg) fbMsg.textContent = '答錯了！正確答案是 ' + q.answer + '。 -10 HP';
