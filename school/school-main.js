@@ -89,12 +89,26 @@ const LIBRARY_TOPICS = [
   { topic: '近似值', icon: '📏', color: '#9B59B6' },
 ];
 
+// ── Grade → Topics mapping (which topics are available for each grade) ─────────
+const GRADE_TOPICS = {
+  '中一': ['代數', '面積', '有向數', '方程', '比率', '百分率', '坐標', '統計', '近似值'],
+  '中二': ['代數', '幾何', '方程', '四邊形', '百分法', '三角比'],
+  '中三': ['幾何', '統計', '概率', '函數', '續多項式'],
+};
+
+// Map grade to a display color
+const GRADE_COLORS = {
+  '中一': '#52C41A',  // green
+  '中二': '#4A90D9',  // blue
+  '中三': '#722ED1',  // purple
+};
+
 // ── NPC / Zone definitions ────────────────────────────────────────────────────
 const SCHOOL_ZONES = [
-  // Classroom student NPCs
-  { tileX: 3,  tileY: 2, type: 'student', topic: '代數', icon: '👦', color: 0x4A90D9, roomId: 'student_alg', label: '同學 A (代數)' },
-  { tileX: 8,  tileY: 2, type: 'student', topic: '幾何', icon: '👧', color: 0x52C41A, roomId: 'student_geo', label: '同學 B (幾何)' },
-  { tileX: 13, tileY: 2, type: 'student', topic: '統計', icon: '🧑', color: 0x722ED1, roomId: 'student_stat', label: '同學 C (統計)' },
+  // Classroom student NPCs → Grade classrooms (中一/中二/中三)
+  { tileX: 3,  tileY: 2, type: 'grade', grade: '中一', icon: '🏫', color: 0x52C41A, roomId: 'grade_s1', label: '中一班房' },
+  { tileX: 8,  tileY: 2, type: 'grade', grade: '中二', icon: '🏫', color: 0x4A90D9, roomId: 'grade_s2', label: '中二班房' },
+  { tileX: 13, tileY: 2, type: 'grade', grade: '中三', icon: '🏫', color: 0x722ED1, roomId: 'grade_s3', label: '中三班房' },
   // Whiteboard challenge (classroom top-center)
   { tileX: 8,  tileY: 1, type: 'whiteboard', topic: null, diffMin: 2, icon: '📋', color: 0xFFD700, roomId: 'whiteboard', label: '白板挑戰' },
   // Staff Room teacher
@@ -103,12 +117,8 @@ const SCHOOL_ZONES = [
   { tileX: 11, tileY: 9, type: 'library', topic: null, icon: '📚', color: 0x2DB7F5, roomId: 'library', label: '圖書館 (自學)' },
 ];
 
-// ── NPC pollution state (session-only) ───────────────────────────────────────
-const npcPollution = {
-  student_alg:  { count: 0 },
-  student_geo:  { count: 0 },
-  student_stat: { count: 0 },
-};
+// ── NPC pollution state (session-only) — kept for future whiteboard/puzzle use
+const npcPollution = {};
 
 // ============================================================
 // SchoolScene
@@ -380,12 +390,12 @@ class SchoolScene extends Phaser.Scene {
   updateHint(zone) {
     if (this.hintText) this.hintText.destroy();
     const labels = {
-      student: '按 E 幫助 ',
+      grade: '按 E 進入班房',
       whiteboard: '按 E 挑戰白板',
       teacher: '按 E 向老師求助',
       library: '按 E 進入圖書館',
     };
-    const msg = (labels[zone.type] || '按 E 互動') + (zone.type === 'student' ? zone.label : '');
+    const msg = (labels[zone.type] || '按 E 互動') + (zone.grade ? ' ' + zone.grade : '');
     this.hintText = this.add.text(
       this.player.x, this.player.y - 40, msg,
       { fontSize: '11px', color: '#FAAD14', backgroundColor: 'rgba(0,0,0,0.8)', padding: { x: 5, y: 3 } }
@@ -395,14 +405,54 @@ class SchoolScene extends Phaser.Scene {
   // ── Zone interaction dispatch ─────────────────────────────
   interactWithZone(zone) {
     switch (zone.type) {
-      case 'student':    this.startStudentQuiz(zone);   break;
-      case 'whiteboard': this.startWhiteboardQuiz();    break;
-      case 'teacher':    showHintPanel();               break;
-      case 'library':    showLibraryPanel();            break;
+      case 'grade':      this.showClassroomPanel(zone.grade); break;
+      case 'whiteboard': this.startWhiteboardQuiz();           break;
+      case 'teacher':    showHintPanel();                      break;
+      case 'library':    showLibraryPanel();                   break;
     }
   }
 
-  // ── Student quiz (classroom — basic questions, awards credits) ──
+  // ── Classroom panel (grade-based topic selection) ──────────
+  showClassroomPanel(grade) {
+    const panel = document.getElementById('classroom-panel');
+    if (!panel) return;
+    const titleEl = document.getElementById('classroom-grade-title');
+    if (titleEl) titleEl.textContent = '🏫 ' + grade + ' 班房 — 課題選擇';
+    const listEl = document.getElementById('classroom-topic-list');
+    if (listEl) {
+      const topicsForGrade = GRADE_TOPICS[grade] || [];
+      const gradeColor = GRADE_COLORS[grade] || '#fff';
+      listEl.innerHTML = topicsForGrade.map(topicName => {
+        const topicData = LIBRARY_TOPICS.find(t => t.topic === topicName);
+        if (!topicData) return '';
+        return `<button class="panel-btn" onclick="startClassroomQuiz('${grade}','${topicName}')" style="justify-content:flex-start;gap:10px">
+          <span style="font-size:20px">${topicData.icon}</span>
+          <span style="color:${topicData.color};font-weight:bold">${topicName}</span>
+          <span style="color:#aaa;font-size:11px;margin-left:auto">+5 學分</span>
+        </button>`;
+      }).join('');
+    }
+    panel.style.display = 'flex';
+  }
+
+  // ── Start quiz from classroom (grade-specific topic) ─────
+  startClassroomQuiz(grade, topic) {
+    closeClassroomPanel();
+    const topicData = LIBRARY_TOPICS.find(t => t.topic === topic);
+    if (!topicData) return;
+    const gradeColor = GRADE_COLORS[grade] || '#fff';
+    startZoneQuiz({
+      topic,
+      icon: topicData.icon,
+      color: parseInt(topicData.color.replace('#', ''), 16),
+      roomId: 'classroom_' + grade + '_' + topic,
+      label: '🏫 ' + grade + '班房 — ' + topic,
+      creditReward: 5,
+      gradeFilter: grade,  // pass grade for topic filtering if needed
+    });
+  }
+
+  // ── Student quiz (deprecated — kept for future reference) ──
   startStudentQuiz(zone) {
     if (zqState.active) return;
     const polluted = npcPollution[zone.roomId] && npcPollution[zone.roomId].count > 0;
@@ -605,6 +655,11 @@ function buyHint(topic, index) {
     listEl.insertBefore(msgDiv, listEl.firstChild);
     showToast('獲得提示！ -' + cost + ' 學分', '#FAAD14');
   }
+}
+
+function closeClassroomPanel() {
+  const panel = document.getElementById('classroom-panel');
+  if (panel) panel.style.display = 'none';
 }
 
 function closeHintPanel() {
