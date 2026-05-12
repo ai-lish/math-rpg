@@ -405,78 +405,13 @@ class SchoolScene extends Phaser.Scene {
   // ── Zone interaction dispatch ─────────────────────────────
   interactWithZone(zone) {
     switch (zone.type) {
-      case 'grade':      this.showClassroomPanel(zone.grade); break;
+      case 'grade':      showClassroomPanel(zone.grade); break;
       case 'whiteboard': this.startWhiteboardQuiz();           break;
       case 'teacher':    showHintPanel();                      break;
       case 'library':    showLibraryPanel();                   break;
     }
   }
 
-  // ── Classroom panel (grade-based topic selection) ──────────
-  showClassroomPanel(grade) {
-    const panel = document.getElementById('classroom-panel');
-    if (!panel) return;
-    const titleEl = document.getElementById('classroom-grade-title');
-    if (titleEl) titleEl.textContent = '🏫 ' + grade + ' 班房 — 課題選擇';
-    const listEl = document.getElementById('classroom-topic-list');
-    if (listEl) {
-      const topicsForGrade = GRADE_TOPICS[grade] || [];
-      const gradeColor = GRADE_COLORS[grade] || '#fff';
-      listEl.innerHTML = topicsForGrade.map(topicName => {
-        const topicData = LIBRARY_TOPICS.find(t => t.topic === topicName);
-        if (!topicData) return '';
-        return `<button class="panel-btn" onclick="startClassroomQuiz('${grade}','${topicName}')" style="justify-content:flex-start;gap:10px">
-          <span style="font-size:20px">${topicData.icon}</span>
-          <span style="color:${topicData.color};font-weight:bold">${topicName}</span>
-          <span style="color:#aaa;font-size:11px;margin-left:auto">+5 學分</span>
-        </button>`;
-      }).join('');
-    }
-    panel.style.display = 'flex';
-  }
-
-  // ── Start quiz from classroom (grade-specific topic) ─────
-  startClassroomQuiz(grade, topic) {
-    closeClassroomPanel();
-    const topicData = LIBRARY_TOPICS.find(t => t.topic === topic);
-    if (!topicData) return;
-    const gradeColor = GRADE_COLORS[grade] || '#fff';
-    startZoneQuiz({
-      topic,
-      icon: topicData.icon,
-      color: parseInt(topicData.color.replace('#', ''), 16),
-      roomId: 'classroom_' + grade + '_' + topic,
-      label: '🏫 ' + grade + '班房 — ' + topic,
-      creditReward: 5,
-      gradeFilter: grade,  // pass grade for topic filtering if needed
-    });
-  }
-
-  // ── Student quiz (deprecated — kept for future reference) ──
-  startStudentQuiz(zone) {
-    if (zqState.active) return;
-    const polluted = npcPollution[zone.roomId] && npcPollution[zone.roomId].count > 0;
-    const diffMax = polluted ? 3 : 2;  // polluted NPCs have harder questions
-    const creditReward = 5;
-    startZoneQuiz({
-      ...zone,
-      topic: zone.topic,
-      diffMax,
-      creditReward,
-      onCorrect: (roomId) => {
-        if (npcPollution[roomId]) {
-          npcPollution[roomId].count = Math.max(0, npcPollution[roomId].count - 1);
-        }
-        this.refreshNPCVisuals();
-      },
-      onWrong: (roomId) => {
-        if (npcPollution[roomId]) {
-          npcPollution[roomId].count = Math.min(3, npcPollution[roomId].count + 1);
-        }
-        this.refreshNPCVisuals();
-      },
-    });
-  }
 
   // ── Whiteboard quiz (high difficulty, rich credits) ────────
   startWhiteboardQuiz() {
@@ -607,6 +542,44 @@ class SchoolScene extends Phaser.Scene {
       });
     }
   }
+}
+
+// ============================================================
+// CLASSROOM PANEL (Grade-based topic selection — standalone)
+// ============================================================
+function showClassroomPanel(grade) {
+  const panel = document.getElementById('classroom-panel');
+  if (!panel) return;
+  const titleEl = document.getElementById('classroom-grade-title');
+  if (titleEl) titleEl.textContent = '🏫 ' + grade + ' 班房 — 課題選擇';
+  const listEl = document.getElementById('classroom-topic-list');
+  if (listEl) {
+    const topicsForGrade = GRADE_TOPICS[grade] || [];
+    listEl.innerHTML = topicsForGrade.map(topicName => {
+      const topicData = LIBRARY_TOPICS.find(t => t.topic === topicName);
+      if (!topicData) return '';
+      return `<button class="panel-btn" onclick="startClassroomQuiz('${grade}','${topicName}')" style="justify-content:flex-start;gap:10px">
+        <span style="font-size:20px">${topicData.icon}</span>
+        <span style="color:${topicData.color};font-weight:bold">${topicName}</span>
+        <span style="color:#aaa;font-size:11px;margin-left:auto">+5 學分</span>
+      </button>`;
+    }).join('');
+  }
+  panel.style.display = 'flex';
+}
+
+function startClassroomQuiz(grade, topic) {
+  closeClassroomPanel();
+  const topicData = LIBRARY_TOPICS.find(t => t.topic === topic);
+  if (!topicData) return;
+  startZoneQuiz({
+    topic,
+    icon: topicData.icon,
+    color: parseInt(topicData.color.replace('#', ''), 16),
+    roomId: 'classroom_' + grade + '_' + topic,
+    label: '🏫 ' + grade + '班房 — ' + topic,
+    creditReward: 5,
+  });
 }
 
 // ============================================================
