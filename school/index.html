@@ -72,7 +72,21 @@
     #quiz-more-btn:hover{background:#5A9FE3;}
     #quiz-close-btn{flex:1;padding:10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;}
     #quiz-close-btn:hover{background:rgba(255,255,255,.18);}
-    /* Overlay panels */
+    /* Classroom panel — bottom drawer style (doesn't block game view) */
+    #classroom-panel .panel-overlay {
+      align-items: flex-end;
+      padding: 0;
+      background: rgba(0,0,0,.5);
+    }
+    #classroom-panel .panel-inner {
+      max-width: 100%;
+      width: 100%;
+      max-height: 55vh;
+      border-radius: 20px 20px 0 0;
+      padding-bottom: env(safe-area-inset-bottom, 12px);
+    }
+
+  /* Overlay panels */
     .panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:310;display:none;justify-content:center;align-items:center;padding:16px;}
     .panel-inner{background:#1e2035;border-radius:16px;padding:20px;max-width:400px;width:100%;max-height:82vh;overflow-y:auto;border:1px solid rgba(255,255,255,.12);}
     .panel-inner h3{color:#fff;font-size:16px;margin-bottom:16px;text-align:center;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.1);}
