@@ -90,10 +90,11 @@ const LIBRARY_TOPICS = [
 ];
 
 // ── Grade → Topics mapping (which topics are available for each grade) ─────────
+// Note: Topics must exist in LIBRARY_TOPICS
 const GRADE_TOPICS = {
-  '中一': ['代數', '面積', '有向數', '方程', '比率', '百分率', '坐標', '統計', '近似值'],
-  '中二': ['代數', '幾何', '方程', '四邊形', '百分法', '三角比'],
-  '中三': ['幾何', '統計', '概率', '函數', '續多項式'],
+  '中一': ['代數', '面積', '方程', '比率', '百分率', '坐標', '統計', '近似值'],
+  '中二': ['代數', '幾何', '方程'],
+  '中三': ['幾何', '統計', '概率', '函數'],
 };
 
 // Map grade to a display color
